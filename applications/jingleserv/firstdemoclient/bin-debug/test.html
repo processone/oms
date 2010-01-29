@@ -1,0 +1,312 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+  
+    <style>
+      #body {
+        margin: 0;
+        padding: 0;
+        background: #000033;
+      }
+      #callRequest, #callInProgress, #callRequested, #callEnded {
+        display: none;
+        position: absolute;
+        margin: 0 0 0 -30%;
+        width: 60%;
+        text-align: center;
+        text-color: #538600;
+        top: 18em;
+        left: 50%;
+        border: 3px solid #000033;
+        background: white;
+        padding: 2em;
+        z-index:100;
+      }
+      #callRequestFrom, #callInProgressFrom, #callRequestedFrom {
+        font-weight: bold;
+        z-index:100;
+      }
+
+      #box {
+        border: 3px solid white;
+        margin: 4em;
+        color: white;
+      }
+
+      #availableContacts button {
+        display: block
+      }
+    </style>
+    <script src="AC_OETags.js" language="javascript"></script>
+<script type="text/javascript" src="jquery.min.js"></script>
+    <script>
+      var idMap = {};
+      var idx=0;
+      var myjid = "";
+      
+      
+      function onLoad() {
+
+		otDispatcher.addEventListener("connectionStatusChange", function(event) {
+          var val = eval(event.newValue);
+          if (val.connected) {
+            //var flashapp = document.getElementById("FlashyJingle");
+            //flashapp.setmyjid(val.jid);
+            myjid = val.jid;
+          }
+        }, false);
+
+        otDispatcher.addEventListener("jinglePackets", function(event) {
+          var flashapp = document.getElementById("FlashyJingle");
+          flashapp.jingleStanzaRecv(eval(event.newValue));
+        }, false);
+
+        otDispatcher.addEventListener("jingleResources", function(event) {
+          var values = eval(event.newValue);
+          var c = $("#availableContacts");
+
+          for (var i = 0; i < values.added.length; i++) {
+            idMap[values.added[i].jid] = ++idx;
+            c.append("<button id='call-"+idx+"' onclick='requestCall("+
+                     uneval(values.added[i].jid)+")'>Call "+
+                     values.added[i].name+"</button>");
+          }
+
+          for (var i = 0; i < values.removed.length; i++) {
+            $("#call-"+idMap[values.removed[i].jid]).remove();
+          }
+        }, false);
+      }
+
+      function deliverStanza(xml, id) {
+        otDispatcher.invoke("sendIq", uneval([xml, id]));
+      }
+
+      function requestCall(jid) {
+        callerJid = jid;
+
+		var flashapp = document.getElementById("FlashyJingle");
+		flashapp.initiateCall(jid);
+
+        $("#callRequest").hide();
+        $("#callRequested").hide();
+        $("#callInProgress").hide();
+        $("#callEnded").hide();
+
+        $("#callRequestedFrom").text(jid)
+        $("#callRequested").show("fast");
+      }
+
+      function newCallRequested(jid) {
+        callerJid = jid;
+		
+		
+        $("#callRequest").hide();
+        $("#callRequested").hide();
+        $("#callInProgress").hide();
+        $("#callEnded").hide();
+
+        $("#callRequestFrom").text(jid)
+        $("#callRequest").show("fast");
+      }
+
+      function callEnded(jid, reason) {
+        callerJid = jid;
+
+        $("#callRequest").hide();
+        $("#callRequested").hide();
+        $("#callInProgress").hide();
+        $("#callEnded").hide();
+
+        $("#callEndedFrom").text(reason);
+        $("#callEnded").show("fast");
+      }
+
+
+	function getjid()
+		{
+		return(myjid);
+		}
+
+      function callStarted(jid) {
+        callerJid = jid;
+
+        $("#callRequest").hide();
+        $("#callRequested").hide();
+        $("#callInProgress").hide();
+        $("#callEnded").hide();
+
+        $("#callInProgressFrom").text(jid);
+        $("#callInProgress").show("fast");
+      }
+
+
+	function endCall(callerJid) 
+		{
+		var flashapp = document.getElementById("FlashyJingle");
+		flashapp.endCall(callerJid);
+		}
+
+
+    </script>
+
+	
+
+<script language="JavaScript" type="text/javascript">
+
+
+
+<!--
+// -----------------------------------------------------------------------------
+// Globals
+// Major version of Flash required
+var requiredMajorVersion = 9;
+// Minor version of Flash required
+var requiredMinorVersion = 0;
+// Minor version of Flash required
+var requiredRevision = 124;
+// -----------------------------------------------------------------------------
+// -->
+</script>
+  </head>
+  
+  <body onload="onLoad()" id="body"  >
+  <br>
+<img src="./process-one_logo.png" alt="logo P1">
+<br>
+<br>
+
+    <script language="JavaScript" type="text/javascript">
+<!--
+
+var jsReady = false;
+function isReady() {
+         return jsReady;
+     }
+     
+
+
+function receive_flash(stanzas)
+	{
+	document.forms.feedback.tfeedback.value = document.forms.feedback.tfeedback.value + "\n" + stanzas;
+	
+	}
+     
+
+
+// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
+var hasProductInstall = DetectFlashVer(6, 0, 65);
+
+// Version check based upon the values defined in globals
+var hasRequestedVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
+
+if ( hasProductInstall && !hasRequestedVersion ) {
+	// DO NOT MODIFY THE FOLLOWING FOUR LINES
+	// Location visited after installation is complete if installation is required
+	var MMPlayerType = (isIE == true) ? "ActiveX" : "PlugIn";
+	var MMredirectURL = window.location;
+    document.title = document.title.slice(0, 47) + " - Flash Player Installation";
+    var MMdoctitle = document.title;
+
+	AC_FL_RunContent(
+		"src", "playerProductInstall",
+		"FlashVars", "MMredirectURL="+MMredirectURL+'&MMplayerType='+MMPlayerType+'&MMdoctitle='+MMdoctitle+"",
+		"width", "600",
+		"height", "150",
+		"align", "middle",
+		"id", "FlashyJingle",
+		"quality", "high",
+		"bgcolor", "#869ca7",
+		"name", "FlashyJingle",
+		"allowScriptAccess","sameDomain",
+		"type", "application/x-shockwave-flash",
+		"pluginspage", "http://www.adobe.com/go/getflashplayer"
+	);
+} else if (hasRequestedVersion) {
+	// if we've detected an acceptable version
+	// embed the Flash Content SWF when all tests are passed
+	AC_FL_RunContent(
+			"src", "FlashyJingle",
+			"width", "600",
+			"height", "150",
+			"align", "middle",
+			"id", "FlashyJingle",
+			"quality", "high",
+			"bgcolor", "#869ca7",
+			"name", "FlashyJingle",
+			"allowScriptAccess","sameDomain",
+			"type", "application/x-shockwave-flash",
+			"pluginspage", "http://www.adobe.com/go/getflashplayer"
+	);
+  } else {  // flash is too old or we can't detect the plugin
+    var alternateContent = 'Alternate HTML content should be placed here. '
+  	+ 'This content requires the Adobe Flash Player. '
+   	+ '<a href=http://www.adobe.com/go/getflash/>Get Flash</a>';
+    document.write(alternateContent);  // insert non-flash content
+  }
+
+  
+  
+ 
+// -->
+
+</script>
+<br><br><br><br><br><br><br><br><br><br><br><br>
+<div style="z-index:0">
+ <noscript>
+  	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+			id="FlashyJingle" width="370" height="150"
+			codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+			<param name="movie" value="FlashyJingle.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#869ca7" />
+			<param name="allowScriptAccess" value="always" />
+			<param name="wmode" value="transparent"> 
+			<embed src="FlashyJingle.swf" WMODE="transparent" quality="high" bgcolor="#869ca7"
+				width="370" height="150" name="FlashyJingle" align="middle"
+				play="true"
+				loop="false"
+				quality="high"
+				allowScriptAccess="always"
+				type="application/x-shockwave-flash"
+				pluginspage="http://www.adobe.com/go/getflashplayer"
+				id="FlashyJingle"
+			/>
+	</object>
+</noscript>   
+</div>    
+    <div id="messages">
+      <div id="callRequest">
+        <div>You have received a call request from <span id="callReqeustFrom"></span></div>
+        <button onclick="document.getElementById('FlashyJingle').initiateCall(callerJid)">Accept Call</button>
+        <button onclick="endCall(callerJid)">End Call</button>
+      </div>
+      <div id="callInProgress">
+        <div>You are talking with <span id="callInProgressFrom"></span></div>
+        <button onclick="endCall(callerJid)">End Call</button>
+      </div>
+      <div id="callRequested">
+        <div>You have requested call with <span id="callRequestedFrom"></span></div>
+        <button onclick="endCall(callerJid)">End Call</button>
+      </div>
+      <div id="callEnded">
+        <div>Call was ended: <span id="callEndedMsg"></span></div>
+      </div>
+    </div>
+    <div id="box">
+      Callable Contacts:
+      <div id="availableContacts"></div>
+    </div>
+ 
+ 
+<span style="color:white">
+XMPP Stanzas flow console:
+</span>
+<form id="feedback" name="feedback">
+<TEXTAREA id="tfeedback" NAME="tfeedback" ROWS=20 COLS=80>
+</TEXTAREA>
+</form>
+ 
+ 
+  </body></html>

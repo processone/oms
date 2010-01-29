@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="1105" height="236" horizontalAlign="left" verticalAlign="top" initialize="init_client()" borderStyle="none" backgroundGradientAlphas="[1.0, 1.0]" backgroundGradientColors="[#FFFFFF, #FFFFFF]">
+	<mx:Style source="FlashyJingle.css"/>
+	<mx:states>
+		<mx:State name="init"/>
+		<mx:State name="loaded" enterState="loaded()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Loaded"/>
+		</mx:State>
+		<mx:State name="unavailable"/>
+	</mx:states>
+	<mx:Script>
+        <![CDATA[
+
+import flash.external.*;
+import flash.external.ExternalInterface;
+import flash.system.Security;
+import flash.media.Sound;
+import mx.effects.easing.*;
+import mx.core.FlexGlobals;
+
+private var appstate:String;					
+private var netcon:NetConnection;
+public var micro:Microphone;
+public var upstream:NetStream;
+public var downstream:NetStream;
+public var session_id:String;
+
+private var transports:Array = new Array();
+private var suggestedTs:Array = new Array();
+
+private var selectedTs:int = -1;
+
+public var userPref:SharedObject;
+
+[Embed(source="./ring1.mp3")]
+public var soundClass:Class;
+
+public var smallSound:Sound;
+
+//To retrieve compilation specified ts servers
+public var comptrans:String = "dev2.process-one.net/jingleserv;localhost/jingleserv";		
+			
+//state functions:
+public function init_client():void
+	{
+		
+		//this have to be set correctly
+		Security.allowDomain('*');
+		Security.allowDomain('localhost');
+		
+		
+		
+		if (ExternalInterface.available) {
+				try {
+                    uidebug.text += "Adding JS callback...";
+					
+					
+					//adding JS callbacks
+					ExternalInterface.addCallback("startCall",startCall);
+               		ExternalInterface.addCallback("callRequested",callRequested);               		
+                	ExternalInterface.addCallback("sessionAccepted",sessionAccepted);
+                	ExternalInterface.addCallback("streamSelectedReceived",streamSelectedReceived);
+                	ExternalInterface.addCallback("endCall",endCall);
+                	ExternalInterface.addCallback("callEnded",callEnded);
+                	
+                	
+					//Should we use speex
+					FJCONF::USESPEEX
+						{	
+						uidebug.text += "\nUsing SPEEX codec";
+						}
+					
+					
+					//Load transports specified as compilation parameters
+					
+						if (comptrans != null)
+							extractts(comptrans);
+						
+					//retrieve object parameters
+                	//var obj:Object = FlashyJingle.application.parameters;
+                	//var comptrans:String = FlexGlobals.topLevelApplication.parameters.tsservers;  //Application.application.parameters.tsservers;
+                	
+                	//transports = extractts(comptrans);
+                	
+                	application.currentState = "loaded";
+					appstate = "loaded";
+                	} 
+                	catch (error:SecurityError) 
+                			{
+                    		uidebug.text += "A SecurityError occurred: " + error.message + "\n";
+                    		application.currentState = "unavailable";
+							appstate = "unavailable";
+                			} 
+                	catch (error:Error) 
+                			{
+                    		uidebug.text += "An Error occurred: " + error.message + "\n";
+                    		application.currentState = "unavailable";
+							appstate = "unavailable";
+                			}
+           	 	}
+				else
+				{
+					uidebug.text += "\nError, external interface not availavle";
+					application.currentState = "unavailable";
+					appstate = "unavailable";
+				}
+					
+				
+	}
+
+
+
+
+public function loaded():void
+	{
+		uidebug.text += "\nEntering state: loaded OMS jingle client";
+		uiappstate.text = "Ready for calling";
+	}
+
+
+
+
+
+public function startCall(Jid:String):Object
+	{
+	session_id = generateRandomString(12);
+	uidebug.text += "\nCalling";
+	return({id:session_id, transports:transports});	
+	}
+	
+	
+public function streamSelectedReceived(id:String,transportId:Object):void
+	{
+		
+	var i:int = 0;
+	uidebug.text += "\nstreamSelectedReceived:" + transportId.valueOf();
+	while (i<transports.length)
+		{
+			if (transports[i].id == transportId) break;	
+			i++;
+		}
+		
+	selectedTs = i;	
+	netcon = new NetConnection();
+	netcon.objectEncoding = ObjectEncoding.AMF3;
+    netcon.addEventListener("netStatus", onNCStatusinitiator);	
+	tryconnect(transports,selectedTs);	
+	}	
+	
+
+public function callRequested(jid:String,transports:Array):String
+	{
+	uidebug.text += "\nReceived call request";
+	uiappstate.text = "Received Call Request";
+	suggestedTs = transports;
+	selectedTs = 0;
+	
+	//Ring();
+	
+	//prepare netconnection
+	netcon = new NetConnection();
+    netcon.objectEncoding = ObjectEncoding.AMF3;
+    netcon.addEventListener("netStatus", onNCStatus);	
+	
+	tryconnect(transports,selectedTs);	
+	session_id = generateRandomString(12);
+	return(session_id);
+	}	
+
+public function sessionAccepted(id:String):void
+	{
+	uiappstate.text = "Playing";
+	stopRinging();	
+	uidebug.text += "\nsession_accepted";
+	downstream = new NetStream(netcon);
+	downstream.play("initiator" + suggestedTs[selectedTs].token)	
+	}
+
+public function tryconnect(transports:Array,id:int):void
+	{
+		uidebug.text += "\nconnecting server:" + transports[id].url;
+		uiappstate.text = "Connecting to multimedia server";
+		netcon.connect(transports[id].url);
+	}
+
+
+public function responderconnectfailled():void
+	{
+		
+	uiappstate.text = "Connection Failled";
+	uidebug.text += "\nresponderconnectfailled";
+	ExternalInterface.call("streamSelectionFailed",session_id);	
+	}
+
+
+public function endCall(id:String):void
+	{
+	uidebug.text += "\nEnding call...";
+	stopRinging();
+	if (netcon != null) 
+		{
+		if (upstream != null) upstream.close();
+		if (downstream != null)	downstream.close();
+		netcon.close();
+		}
+	uidebug.text += "Call Ended";
+	}
+
+public function callEnded(id:String):void
+	{
+	stopRinging();	
+	uidebug.text += "\nEnding call...";
+	if (netcon != null) 
+		{
+		upstream.close();
+		downstream.close();
+		netcon.close();
+		}
+	uidebug.text += "Call Ended";
+	}
+
+
+	
+public function generateRandomString(newLength:Number):String{
+  var a:String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  var alphabet:Array = a.split("");
+  var randomLetter:String = "";
+  for (var i:Number = 0; i < newLength; i++){
+    randomLetter += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return randomLetter;
+}
+//******************* Private functions ****************************
+public function onNCStatus(event:NetStatusEvent):void 
+				{
+   				switch (event.info.code)
+   					{
+   				
+   					 case "NetConnection.Connect.Success": 
+   						{
+						
+						uidebug.text += "\nConnected to OMS server";
+										
+						upstream = new NetStream(netcon);
+						
+						micro = new Microphone();
+					
+						micro = Microphone.getMicrophone();
+						
+						FJCONF::USESPEEX
+							{
+								micro.codec = SoundCodec.SPEEX;
+							}
+						
+						
+						//micro.gain = 75;
+						micro.setSilenceLevel(7,100);
+						upstream.attachAudio(micro);
+						
+						upstream.publish("responder" + suggestedTs[selectedTs].token);						   
+    				
+						ExternalInterface.call("streamSelected",session_id, suggestedTs[selectedTs].id);
+
+   						break;
+   						}
+   					
+   					case "NetConnection.Connect.Failed":
+   						{
+   						if (selectedTs > suggestedTs.length)
+   							responderconnectfailled();
+   							else
+   							tryconnect(suggestedTs,selectedTs);
+							break;
+   						}
+   						
+   					case "NetConnection.Connect.Closed":
+   						{
+   							
+   						} 	
+   						
+   					default:
+   					{
+   					uidebug.text += "\nCan't Connect to OMS server:" +event.info.code;
+   					application.currentState = "loaded";
+   					}
+				  }
+				}
+
+public function onNCStatusinitiator(event:NetStatusEvent):void 
+				{
+   				switch (event.info.code)
+   					{
+   					case "NetConnection.Connect.Success":
+   						{
+						uidebug.text += "\nConnected to OMS server";
+					
+   						uidebug.text += "\nSelected transport:" + selectedTs.toString();
+   						uidebug.text += "\nTransports :" + transports.toString();
+   						upstream = new NetStream(netcon);
+   						micro = new Microphone();
+   						micro = Microphone.getMicrophone();
+						
+						
+						FJCONF::USESPEEX
+						{
+							micro.codec = SoundCodec.SPEEX;
+						}
+						
+						micro.setSilenceLevel(7,1000);
+   						
+   						//micro.setSilenceLevel(0);
+   					
+   						upstream.attachAudio(micro);
+   						upstream.publish("initiator" + transports[selectedTs].token);
+   			
+   					
+   						downstream = new NetStream(netcon);
+   						downstream.play("responder" + transports[selectedTs].token);
+   					
+   						break;
+   						}
+   					
+   					case "NetConnection.Connect.Closed":
+   						{
+   							
+   						}
+   					
+   					default:
+   					{
+   					uidebug.text += "\nCan't Connect to OMS server";
+   					application.currentState = "loaded";
+   					}
+					}
+				}
+
+public function extractts(cts:String):void
+	{
+
+	var explocts:Array = cts.split(";"); 	
+	for (var i:int=0;i<explocts.length;i++)
+		{
+		var ids:String = generateRandomString(8);
+		var token:String = generateRandomString(10);
+		uidebug.text += "\nAdded Ts server:" + explocts[i];
+		transports.push({id:ids, url:"rtmp://" + explocts[i], token:token}); 	
+		}
+	}
+	
+
+public function setVolume():void
+	{
+	if (downstream != null)
+		{
+		var soundtransfort:SoundTransform = new SoundTransform(vslider.value / 10,1);	
+		downstream.soundTransform = soundtransfort;	
+		}
+	}
+
+public function Ring():void
+	{
+    uiappstate.text = "Ringing ....";
+    smallSound = new soundClass() as Sound;
+    var soundtransform:SoundTransform = new SoundTransform();
+	soundtransform.volume = 0.3;
+     //smallSound.play(0,1, soundtransform);
+    }
+
+public function stopRinging():void
+	{
+	//if (smallSound != null)
+	//	smallSound.play(0,0);
+	}
+
+
+private function toggleBtn(e:MouseEvent):void{
+if(e.currentTarget.label== 'Open Console')
+	panelOut.play();
+	else
+	panelIn.play();
+}
+	
+
+
+                   ]]>
+		</mx:Script> 
+		<mx:Move id="panelOut" target="{panel}" yTo="57" effectEnd="btn.label='Close Console'" duration="1500" easingFunction="Exponential.easeOut"/>
+
+		<mx:Move id="panelIn" target="{panel}" yTo="-200" effectEnd="btn.label='Open Console'" duration="1000" easingFunction="Exponential.easeIn"/>  	
+	
+		<mx:Canvas x="10"  width="576" height="112" borderColor="#FFFFFF" borderStyle="outset" y="-180" visible="true" backgroundColor="#C7DFFC" id="panel">
+			<mx:TextArea x="8.5" y="10" width="553.5" height="88" id="uidebug" editable="false" borderThickness="0"/>
+		</mx:Canvas>
+		<mx:Canvas x="1" y="1" width="1283" height="40" backgroundAlpha="1.0" contentBackgroundAlpha="1.0" borderColor="#C7DFFC">
+		<mx:Label x="0" y="10" text="Status :" fontWeight="bold" color="#000000"/>
+		<mx:Label x="56" y="10" text="initialisation" width="207" id="uiappstate" color="#000000"/>
+		<mx:Label x="252" y="10" text="Volume:" fontWeight="bold"/>
+		<mx:HSlider x="307" y="19" change="setVolume();" id="vslider"   value="5" liveDragging="true" enabled="true"/>
+		<mx:Button x="497" y="9" label="Open Console" id="btn" click="toggleBtn(event)"/>
+	</mx:Canvas>
+		<mx:Canvas x="0" y="49" width="1095" height="127">
+		</mx:Canvas>
+	
+
+	
+</mx:Application>

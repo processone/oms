@@ -1,0 +1,672 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+            "http://www.w3.org/TR/REC-html40/loose.dtd">
+<HTML>
+<HEAD>
+<TITLE>
+ OneTeam Media Server 0.8.0
+ 
+ Installation, Operation and API Guide
+
+
+</TITLE>
+
+<META http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<META name="GENERATOR" content="hevea 1.10">
+<STYLE type="text/css">
+.li-itemize{margin:1ex 0ex;}
+.li-enumerate{margin:1ex 0ex;}
+.dd-description{margin:0ex 0ex 1ex 4ex;}
+.dt-description{margin:0ex;}
+.toc{list-style:none;}
+.thefootnotes{text-align:left;margin:0ex;}
+.dt-thefootnotes{margin:0em;}
+.dd-thefootnotes{margin:0em 0em 0em 2em;}
+.footnoterule{margin:1em auto 1em 0px;width:50%;}
+.caption{padding-left:2ex; padding-right:2ex; margin-left:auto; margin-right:auto}
+.title{margin:2ex auto;text-align:center}
+.center{text-align:center;margin-left:auto;margin-right:auto;}
+.flushleft{text-align:left;margin-left:0ex;margin-right:auto;}
+.flushright{text-align:right;margin-left:auto;margin-right:0ex;}
+DIV TABLE{margin-left:inherit;margin-right:inherit;}
+PRE{text-align:left;margin-left:0ex;margin-right:auto;}
+BLOCKQUOTE{margin-left:4ex;margin-right:4ex;text-align:left;}
+TD P{margin:0px;}
+.boxed{border:1px solid black}
+.textboxed{border:1px solid black}
+.vbar{border:none;width:2px;background-color:black;}
+.hbar{border:none;height:2px;width:100%;background-color:black;}
+.hfill{border:none;height:1px;width:200%;background-color:black;}
+.vdisplay{border-collapse:separate;border-spacing:2px;width:auto; empty-cells:show; border:2px solid red;}
+.vdcell{white-space:nowrap;padding:0px;width:auto; border:2px solid green;}
+.display{border-collapse:separate;border-spacing:2px;width:auto; border:none;}
+.dcell{white-space:nowrap;padding:0px;width:auto; border:none;}
+.dcenter{margin:0ex auto;}
+.vdcenter{border:solid #FF8000 2px; margin:0ex auto;}
+.minipage{text-align:left; margin-left:0em; margin-right:auto;}
+.marginpar{border:solid thin black; width:20%; text-align:left;}
+.marginparleft{float:left; margin-left:0ex; margin-right:1ex;}
+.marginparright{float:right; margin-left:1ex; margin-right:0ex;}
+.theorem{text-align:left;margin:1ex auto 1ex 0ex;}
+.part{margin:2ex auto;text-align:center}
+.SPAN{width:20%; float:right; text-align:left; margin-left:auto;}
+H1.titlemain HR{display:none;}
+TABLE.title{border-top:1px solid grey;border-bottom:1px solid grey; background: #efefef}
+H1.chapter A, H2.section A, H3.subsection A, H4.subsubsection A, H5.paragraph A{color:#000000; text-decoration:none;}
+H1.chapter, H2.section, H3.subsection, H4.subsubsection, H5.paragraph{border-top: 1px solid grey; background: #efefef; padding: 0.5ex}
+pre.verbatim{margin:1ex 2ex;border:1px dashed lightgrey;background-color:#f9f9f9;padding:0.5ex;}
+.dt-description{margin:0ex 2ex;}
+table[border="1"]{border-collapse:collapse;margin-bottom:1em;}
+table[border="1"] td{border:1px solid #aaa;padding:2px}
+BLOCKQUOTE.table DIV.center DIV.center HR{display:none;}
+BLOCKQUOTE.figure DIV.center DIV.center HR{display:none;}
+</STYLE>
+</HEAD>
+<BODY >
+<!--HEVEA command line is: /usr/bin/hevea -fix -pedantic doc.tex -->
+<!--CUT DEF chapter 1 --><TABLE CLASS="title"><TR><TD><H1 CLASS="titlemain">
+<TABLE CELLSPACING=6 CELLPADDING=0><TR><TD ALIGN=center NOWRAP> <FONT SIZE=6><B>OneTeam Media Server 0.8.0 </B></FONT></TD></TR>
+<TR><TD ALIGN=center NOWRAP>&nbsp;</TD></TR>
+<TR><TD ALIGN=center NOWRAP> <FONT SIZE=6>Installation, Operation and API Guide</FONT></TD></TR>
+</TABLE>
+</H1><H3 CLASS="titlerest">ProcessOne</H3></TD></TR>
+</TABLE><!--TOC chapter Contents-->
+<H1 CLASS="chapter"><!--SEC ANCHOR -->Contents</H1><!--SEC END --><UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc1">Chapter&#XA0;1&#XA0;&#XA0;Installation and Operation</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc2">1.1&#XA0;&#XA0;Introduction</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc3">1.2&#XA0;&#XA0;Installation</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc4">1.2.1&#XA0;&#XA0;Requirements</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc5">1.2.2&#XA0;&#XA0;Compile and Install</A>
+</LI></UL>
+</LI><LI CLASS="li-toc"><A HREF="#htoc6">1.3&#XA0;&#XA0;Configuring <TT>OMS</TT></A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc7">1.3.1&#XA0;&#XA0;Basic Configuration</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc8">1.3.2&#XA0;&#XA0;Administration Script Configuration</A>
+</LI></UL>
+</LI></UL>
+</LI><LI CLASS="li-toc"><A HREF="#htoc9">Chapter&#XA0;2&#XA0;&#XA0;API</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc10">2.1&#XA0;&#XA0;Introduction</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc11">2.2&#XA0;&#XA0;Configuration File</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc12">2.3&#XA0;&#XA0;Types and Definitions</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc13">2.3.1&#XA0;&#XA0;AMF Data Structure</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc14">2.3.2&#XA0;&#XA0;RTMP Message</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc15">2.3.3&#XA0;&#XA0;Call Context and &#X201C;RTMP Socket&#X201D;</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc16">2.3.4&#XA0;&#XA0;NetConnection and NetStream codes</A>
+</LI></UL>
+</LI><LI CLASS="li-toc"><A HREF="#htoc17">2.4&#XA0;&#XA0;NetConnection handlers</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc18">2.4.1&#XA0;&#XA0;load/1</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc19">2.4.2&#XA0;&#XA0;connect/N</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc20">2.4.3&#XA0;&#XA0;close/1</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc21">2.4.4&#XA0;&#XA0;play/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc22">2.4.5&#XA0;&#XA0;publish/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc23">2.4.6&#XA0;&#XA0;stream_started/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc24">2.4.7&#XA0;&#XA0;stream_stopped/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc25">2.4.8&#XA0;&#XA0;&#X2019;function&#X2019;/N</A>
+</LI></UL>
+</LI><LI CLASS="li-toc"><A HREF="#htoc26">2.5&#XA0;&#XA0;NetStream handlers</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc27">2.5.1&#XA0;&#XA0;play/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc28">2.5.2&#XA0;&#XA0;seek/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc29">2.5.3&#XA0;&#XA0;pause/4</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc30">2.5.4&#XA0;&#XA0;receiveAudio/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc31">2.5.5&#XA0;&#XA0;receiveVideo/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc32">2.5.6&#XA0;&#XA0;bufferTime/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc33">2.5.7&#XA0;&#XA0;close/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc34">2.5.8&#XA0;&#XA0;route/3</A>
+</LI></UL>
+</LI><LI CLASS="li-toc"><A HREF="#htoc35">2.6&#XA0;&#XA0;<TT>OMS</TT> API</A>
+<UL CLASS="toc"><LI CLASS="li-toc">
+<A HREF="#htoc36">2.6.1&#XA0;&#XA0;send/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc37">2.6.2&#XA0;&#XA0;sync_send/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc38">2.6.3&#XA0;&#XA0;alloc_csid/1</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc39">2.6.4&#XA0;&#XA0;close/1</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc40">2.6.5&#XA0;&#XA0;getopts/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc41">2.6.6&#XA0;&#XA0;setopts/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc42">2.6.7&#XA0;&#XA0;register_stream/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc43">2.6.8&#XA0;&#XA0;unregister_stream/2</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc44">2.6.9&#XA0;&#XA0;all_streams/1</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc45">2.6.10&#XA0;&#XA0;all_sessions/1</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc46">2.6.11&#XA0;&#XA0;call/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc47">2.6.12&#XA0;&#XA0;stream_info/3</A>
+</LI><LI CLASS="li-toc"><A HREF="#htoc48">2.6.13&#XA0;&#XA0;stream_info/4</A>
+</LI></UL>
+</LI></UL>
+</LI></UL><P> <A NAME="admin guide"></A> </P><!--TOC chapter Installation and Operation-->
+<H1 CLASS="chapter"><!--SEC ANCHOR --><A NAME="htoc1">Chapter&#XA0;1</A>&#XA0;&#XA0;<A HREF="#admin guide">Installation and Operation</A></H1><!--SEC END --><P> <A NAME="admin guide"></A> </P><P> <A NAME="intro"></A> </P><!--TOC section Introduction-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc2">1.1</A>&#XA0;&#XA0;<A HREF="#intro">Introduction</A></H2><!--SEC END --><P> <A NAME="intro"></A> </P><P>OneTeam Media Server (<TT>OMS</TT>) is a Flash server written in <TT>Erlang/OTP</TT>. Key features:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+Support for streaming live/recorded content
+</LI><LI CLASS="li-itemize">Support for recording live content
+</LI><LI CLASS="li-itemize">Support for <TT>ActionScript3.0</TT> Shared Objects
+</LI><LI CLASS="li-itemize">Clustering support
+</LI><LI CLASS="li-itemize">Ability to write application modules in <TT>Erlang/OTP</TT>
+</LI></UL><P> <A NAME="installation"></A> </P><!--TOC section Installation-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc3">1.2</A>&#XA0;&#XA0;<A HREF="#installation">Installation</A></H2><!--SEC END --><P> <A NAME="installation"></A> 
+ <A NAME="requirements"></A> </P><!--TOC subsection Requirements-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc4">1.2.1</A>&#XA0;&#XA0;<A HREF="#requirements">Requirements</A></H3><!--SEC END --><P> <A NAME="requirements"></A> </P><P>To compile <TT>OMS</TT> you need:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+Unix-like operating system
+</LI><LI CLASS="li-itemize">GNU Make
+</LI><LI CLASS="li-itemize">GCC
+</LI><LI CLASS="li-itemize"><TT>Erlang/OTP</TT> R11B-0 or higher.
+</LI></UL><P> <A NAME="compile"></A> </P><!--TOC subsection Compile and Install-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc5">1.2.2</A>&#XA0;&#XA0;<A HREF="#compile">Compile and Install</A></H3><!--SEC END --><P> <A NAME="compile"></A> </P><P>If you only want to have a look at <TT>OMS</TT> without installing it in your system,
+execute:
+</P><PRE CLASS="verbatim">$ ./configure
+$ make all
+</PRE><P>This will create sample configuration files <TT>oms.cfg</TT> and <TT>omsctl.cfg</TT>
+as well as sample administration script <TT>omsctl</TT> in the current directory.
+To start <TT>OMS</TT> execute:
+</P><PRE CLASS="verbatim">$ ./omsctl live
+</PRE><P>This will start <TT>OMS</TT> in &#X201C;live&#X201D; mode (i.e. without detaching it from console),
+and loads all example applications. To stop <TT>OMS</TT> just type Ctrl+C.</P><P>To install <TT>OMS</TT> in your system, you need to execute:
+</P><PRE CLASS="verbatim">$ ./configure --prefix=/ --exec_prefix=/usr
+$ make
+$ sudo make install
+</PRE><P>This will create and install the following files and directories:</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>/etc/oms/</TT>:  Configuration directory:
+<UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>oms.cfg</TT>:  <TT>OMS</TT> configuration file
+</LI><LI CLASS="li-itemize"><TT>omsctl.cfg</TT>:  <TT>OMS</TT> configuration file of the administration script
+</LI><LI CLASS="li-itemize"><TT>apps/</TT>:  <TT>OMS</TT> application configurations directory
+</LI></UL>
+</LI><LI CLASS="li-itemize"><TT>/path/to/erlang_root/lib/oms-0.8.0/</TT>: 
+<UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>ebin/</TT>:  <TT>Erlang/OTP</TT> bytecode binary files (*.beam)
+</LI><LI CLASS="li-itemize"><TT>ebin/apps/</TT>:  a directory for storing <TT>OMS</TT> application files (*.beam)
+</LI><LI CLASS="li-itemize"><TT>include/</TT>:  <TT>Erlang/OTP</TT> header files (*.hrl)
+</LI><LI CLASS="li-itemize"><TT>priv/lib/</TT>:  dynamic libraries (*.so)
+</LI></UL>
+</LI><LI CLASS="li-itemize"><TT>/usr/lib/oms/</TT>:  a symlink pointed to
+<TT>/path/to/erlang_root/lib/oms-0.8.0/</TT>
+</LI><LI CLASS="li-itemize"><TT>/usr/bin/omsctl</TT>:  administration script
+</LI><LI CLASS="li-itemize"><TT>/var/lib/oms/</TT>:  Mnesia database spool files (*.DCD, *.DCL, *.DAT)
+</LI><LI CLASS="li-itemize"><TT>/var/log/oms/</TT>:  log directory
+<UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>oms.log</TT>:  <TT>OMS</TT> log
+</LI><LI CLASS="li-itemize"><TT>erlang.log</TT>:  <TT>Erlang/OTP</TT> system log
+</LI></UL>
+</LI></UL><P>Before starting <TT>OMS</TT> you need:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+create a user account (likely <TT>oms</TT>);
+</LI><LI CLASS="li-itemize">check if this user has a read/write access to <TT>/var/log/oms/</TT>
+and <TT>/var/lib/oms/</TT> directories;
+</LI><LI CLASS="li-itemize">edit configuration file <TT>oms.cfg</TT> as described in the following
+sections.
+</LI></UL><P>Now start <TT>OMS</TT> in background:
+</P><PRE CLASS="verbatim">$ /usr/bin/omsctl start
+</PRE><P>To stop <TT>OMS</TT> use the following command:
+</P><PRE CLASS="verbatim">$ /usr/bin/omsctl stop
+</PRE><P> <A NAME="configuration"></A> </P><!--TOC section Configuring <TT>OMS</TT>-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc6">1.3</A>&#XA0;&#XA0;<A HREF="#configuration">Configuring <TT>OMS</TT></A></H2><!--SEC END --><P> <A NAME="configuration"></A> 
+ <A NAME="basic configuration"></A> </P><!--TOC subsection Basic Configuration-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc7">1.3.1</A>&#XA0;&#XA0;<A HREF="#basic configuration">Basic Configuration</A></H3><!--SEC END --><P> <A NAME="basic configuration"></A> </P><P><TT>oms.cfg</TT> is a basic configuration file. The file has INI-syntax.
+Currently there are only two sections: <CODE>[main]</CODE> and <CODE>[listen]</CODE>.</P><P>Available options in section <CODE>[main]</CODE>:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>loglevel</TT>:  This option modifies the verbosity of the file oms.log.
+The available levels are:
+<DL CLASS="description"><DT CLASS="dt-description">
+</DT><DD CLASS="dd-description"><TT>0</TT>:  No logging at all (not recommended)
+</DD><DT CLASS="dt-description"></DT><DD CLASS="dd-description"><TT>1</TT>:  Critical
+</DD><DT CLASS="dt-description"></DT><DD CLASS="dd-description"><TT>2</TT>:  Error
+</DD><DT CLASS="dt-description"></DT><DD CLASS="dd-description"><TT>3</TT>:  Warning
+</DD><DT CLASS="dt-description"></DT><DD CLASS="dd-description"><TT>4</TT>:  Info
+</DD><DT CLASS="dt-description"></DT><DD CLASS="dd-description"><TT>5</TT>:  Debug
+</DD></DL>
+Default is 4 (Info).
+</LI><LI CLASS="li-itemize"><TT>app_conf_dir</TT>:  a directory for storing application configuration files,
+<TT>/etc/oms/apps/</TT> for typical installation.
+</LI><LI CLASS="li-itemize"><TT>app_beam_dir</TT>:  a directory for storing application binary files,
+<TT>/usr/lib/oms/ebin/apps/</TT> for typical installation.
+</LI></UL><P>Available options in section <CODE>[listen]</CODE>:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>type</TT>:  a client connection type. Currently only <TT>rtmp</TT> type is
+supported. The default is <TT>rtmp</TT>.
+</LI><LI CLASS="li-itemize"><TT>address</TT>:  an IP address to listen for incoming connections. The default
+is <TT>0.0.0.0</TT>
+</LI><LI CLASS="li-itemize"><TT>port</TT>:  an IP port to listen for incoming connections. The default is
+<TT>1935</TT>
+</LI></UL><P>Example configuration file:
+</P><PRE CLASS="verbatim">[main]
+loglevel = 4
+app_conf_dir = /etc/oms/apps
+app_beam_dir = /usr/lib/oms/ebin/apps
+
+[listen]
+type = rtmp
+address = 0.0.0.0
+port = 1935
+</PRE><P> <A NAME="admin script config"></A> </P><!--TOC subsection Administration Script Configuration-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc8">1.3.2</A>&#XA0;&#XA0;<A HREF="#admin script config">Administration Script Configuration</A></H3><!--SEC END --><P> <A NAME="admin script config"></A> </P><P><TT>omsctl.cfg</TT> is a configuration file used by administration script
+<TT>omsctl</TT>. This file contains shell variables. All variables are
+mandatory. The available variables are:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>NODE</TT>:  is an <TT>Erlang/OTP</TT> node name, likely <TT>oms</TT>
+</LI><LI CLASS="li-itemize"><TT>HOST</TT>:  is an FQDN of your host, likely &#X2018;hostname -f&#X2018;
+</LI><LI CLASS="li-itemize"><TT>POLL</TT>:  is a boolean flag defining whether to use kernel poll or not.
+Available values are <TT>true</TT> or <TT>false</TT>
+</LI><LI CLASS="li-itemize"><TT>ERL</TT>:  is a full path to <TT>Erlang/OTP</TT> emulator (e.g. <TT>/usr/bin/erl</TT>)
+</LI><LI CLASS="li-itemize"><TT>BEAMDIR</TT>:  is full path to <TT>OMS</TT> <TT>Erlang/OTP</TT> bytecode files (*.beam)
+(e.g. <TT>/usr/lib/oms/ebin</TT>)
+</LI><LI CLASS="li-itemize"><TT>CONFIG</TT>:  is a full path to basic configuration file (e.g. <TT>/etc/oms/oms.cfg</TT>)
+</LI><LI CLASS="li-itemize"><TT>LOG</TT>:  is a full path to <TT>OMS</TT> log file (e.g. <TT>/var/log/oms/oms.log</TT>)
+</LI><LI CLASS="li-itemize"><TT>ERLANG_LOG</TT>:  is a full path to <TT>Erlang/OTP</TT> system log file
+(e.g. <TT>/var/log/oms/erlang.log</TT>)
+</LI><LI CLASS="li-itemize"><TT>MNESIADIR</TT>:  is a full path to Mnesia spool files directory
+(e.g. <TT>/var/lib/oms/db/$NODE</TT>)
+</LI></UL><P>Example configuration:
+</P><PRE CLASS="verbatim">NODE=oms
+HOST=`hostname -f`
+POLL=true
+ERL=/usr/bin/erl
+BEAMDIR=/usr/lib/oms/ebin
+CONFIG=/etc/oms/oms.cfg
+LOG=/var/log/oms/oms.log
+ERLANG_LOG=/var/log/oms/erlang.log
+MNESIADIR=/var/lib/oms/db/$NODE
+</PRE><P> <A NAME="api guide"></A> </P><!--TOC chapter API-->
+<H1 CLASS="chapter"><!--SEC ANCHOR --><A NAME="htoc9">Chapter&#XA0;2</A>&#XA0;&#XA0;<A HREF="#api guide">API</A></H1><!--SEC END --><P> <A NAME="api guide"></A> </P><P> <A NAME="intro.api"></A> </P><!--TOC section Introduction-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc10">2.1</A>&#XA0;&#XA0;<A HREF="#intro.api">Introduction</A></H2><!--SEC END --><P> <A NAME="intro.api"></A> 
+This chapter describes API for <TT>OMS</TT> applications.
+Every <TT>OMS</TT> application consists of <TT>NetConnection</TT> and
+<TT>NetStream</TT> modules. These modules should implement handlers as
+described in this guide. The modules should be configured in
+the application configuration file.</P><P> <A NAME="configfile"></A> </P><!--TOC section Configuration File-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc11">2.2</A>&#XA0;&#XA0;<A HREF="#configfile">Configuration File</A></H2><!--SEC END --><P> <A NAME="configfile"></A> 
+When <TT>OMS</TT> loads an application it reads its configuration from
+the corresponding file. Application configuration files have simple
+INI syntax. The only mandatory section is <CODE>[main]</CODE>
+where you should define application name, module names, etc.</P><P>Available options in section <CODE>[main]</CODE>:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>name</TT>. An application name. A <TT>NetConnection</TT> with
+URI <CODE>scheme://server/name</CODE> gets connected to this application.
+This option is mandatory.
+</LI><LI CLASS="li-itemize"><TT>netconnection_module</TT>. A name of <TT>NetConnection</TT> module.
+Default is <TT>undefined</TT>.
+</LI><LI CLASS="li-itemize"><TT>netstream_module</TT>. A name of <TT>NetStream</TT> module.
+Default is <TT>undefined</TT>.
+</LI><LI CLASS="li-itemize"><TT>beam_dir</TT>. A directory with compiled modules.
+By default OMS loads modules from its own preconfigured directory.
+</LI></UL><P>Also you are able to define application specific options in section
+<CODE>[options]</CODE>. This section will be converted in a property list
+<CODE>[{key, "value"}]</CODE> and passed in <CODE>#call_ctx.option</CODE>
+record field. The example configuration of <TT>myapp.cfg</TT>:
+</P><PRE CLASS="verbatim">[main]
+name = myapp
+netconnection_module = myapp_netconnection
+beam_dir = /var/lib/oms/modules
+
+[options]
+# application specific options
+video_dir = /var/www/video
+audio_dir = /var/www/audio
+</PRE><P> <A NAME="types"></A> </P><!--TOC section Types and Definitions-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc12">2.3</A>&#XA0;&#XA0;<A HREF="#types">Types and Definitions</A></H2><!--SEC END --><P> <A NAME="types"></A> 
+ <A NAME="amf"></A> </P><!--TOC subsection AMF Data Structure-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc13">2.3.1</A>&#XA0;&#XA0;<A HREF="#amf">AMF Data Structure</A></H3><!--SEC END --><P> <A NAME="amf"></A> 
+</P><PRE CLASS="verbatim">amf() = number() | binary() | amf_object() |
+        ecma_array() | date() | null | undefined |
+        array() | unsupported | movie_clip |
+        true | false
+number() = integer() | float()
+amf_object() = {object, [{binary(), amf()}]}
+ecma_array() = {ecma_array, [{binary(), amf()}]}
+array() = {array, [amf()]}
+date() = {date, number()}
+</PRE><P> <A NAME="rtmp"></A> </P><!--TOC subsection RTMP Message-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc14">2.3.2</A>&#XA0;&#XA0;<A HREF="#rtmp">RTMP Message</A></H3><!--SEC END --><P> <A NAME="rtmp"></A> </P><P>The following records are defined in <CODE>"rtmp.hrl"</CODE> file.</P><PRE CLASS="verbatim">#rtmp_msg{type = positive_integer(),
+          stream = positive_integer(),
+          timestamp = positive_integer(),
+          chunk_stream = non_neg_integer() &gt; 1,
+          data = #amf_cmd{} | tuple() | binary()}
+</PRE><P>Where <CODE>type</CODE> is a type of RTMP message; <CODE>stream</CODE> is a
+message stream ID; <CODE>timestamp</CODE> is an unsigned 32-bit integer;
+<CODE>chunk_stream</CODE> is a chunk stream ID; data is an AMF command,
+tuple or binary depending on the <CODE>type</CODE>.</P><PRE CLASS="verbatim">#amf_cmd{name = binary() | error | result | status,
+         trid = number(),
+         body = [amf()]}
+</PRE><P>Where <CODE>name</CODE> is a name of AMF command; <CODE>trid</CODE> is a transaction
+ID of AMF command; <CODE>body</CODE> is a list of <CODE>amf()</CODE> structures.</P><P> <A NAME="callctx"></A> </P><!--TOC subsection Call Context and &#X201C;RTMP Socket&#X201D;-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc15">2.3.3</A>&#XA0;&#XA0;<A HREF="#callctx">Call Context and &#X201C;RTMP Socket&#X201D;</A></H3><!--SEC END --><P> <A NAME="callctx"></A> </P><P>Call context is passed in almost all handlers. It&#X2019;s defined
+in <CODE>"oms.hrl"</CODE> file.</P><PRE CLASS="verbatim">#call_ctx{rtmp_sock = rtmp_socket()
+          session = pid(),
+          app_name = string(),
+          options = [{atom(), string()}],
+          addr = {ip_addr(), port()},
+          stream = positive_integer()}
+ip_addr() = ipv4_addr() | ipv6_addr()
+port() = positive_integer()
+rtmp_socket() = pid()
+</PRE><P>Where:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>rtmp_sock</TT> is an &#X201C;RTMP socket&#X201D;. Note: it is not a regular TCP socket,
+but a high-level process managing RTMP chunk streams.
+</LI><LI CLASS="li-itemize"><TT>session</TT> is a process holding the session;
+</LI><LI CLASS="li-itemize"><TT>app_name</TT> is the application name;
+</LI><LI CLASS="li-itemize"><TT>options</TT> is the application options;
+</LI><LI CLASS="li-itemize"><TT>addr</TT> is a client transport address;
+</LI><LI CLASS="li-itemize"><TT>stream</TT> is a message stream ID.
+</LI></UL><P> <A NAME="macros"></A> </P><!--TOC subsection NetConnection and NetStream codes-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc16">2.3.4</A>&#XA0;&#XA0;<A HREF="#macros">NetConnection and NetStream codes</A></H3><!--SEC END --><P> <A NAME="macros"></A> </P><P>Sometimes it is needed to use <TT>NetConnection</TT> or <TT>NetStream</TT> information
+codes. There are several macros defined for this purpose
+in <CODE>"oms.hrl"</CODE> header file. For example, you can use these macros in <TT>NetConnection</TT>
+callbacks or in <CODE>oms_api:stream_info/3,4</CODE> functions.</P><P><TT>NetConnection</TT> information codes:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<CODE>NC_CALL_FAILED</CODE> is <TT>"NetConnection.Call.Failed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NC_CONNECT_APP_SHUTDOWN</CODE> is <TT>"NetConnection.Connect.AppShutdown"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NC_CONNECT_CLOSED</CODE> is <TT>"NetConnection.Connect.Closed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NC_CONNECT_FAILED</CODE> is <TT>"NetConnection.Connect.Failed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NC_CONNECT_REJECTED</CODE> is <TT>"NetConnection.Connect.Rejected"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NC_CONNECT_SUCCESS</CODE> is <TT>"NetConnection.Connect.Success"</TT>.
+</LI></UL><P><TT>NetStream</TT> information codes:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<CODE>NS_BUFFER_EMPTY</CODE> is <TT>"NetStream.Buffer.Empty"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_BUFFER_FULL</CODE> is <TT>"NetStream.Buffer.Full"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_FAILED</CODE> is <TT>"NetStream.Failed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PAUSE_NOTIFY</CODE> is <TT>"NetStream.Pause.Notify"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_COMPLETE</CODE> is <TT>"NetStream.Play.Complete"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_FAILED</CODE> is <TT>"NetStream.Play.Failed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_INSUFFICIENT_BW</CODE> is <TT>"NetSream.Play.InsufficientBW"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_PUBLISH_NOTIFY</CODE> is <TT>"NetStream.Play.PublishNotify"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_RESET</CODE> is <TT>"NetStream.Play.Reset"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_START</CODE> is <TT>"NetStream.Play.Start"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_STOP</CODE> is <TT>"NetStream.Play.Stop"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_STREAM_NOT_FOUND</CODE> is <TT>"NetStream.Play.StreamNotFound"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_SWITCH</CODE> is <TT>"NetStream.Play.Switch"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PLAY_UNPUBLISH_NOTIFY</CODE> is <TT>"NetStream.Play.UnpublishNotify"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PUBLISH_BAD_NAME</CODE> is <TT>"NetStream.Publish.BadName"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PUBLISH_IDLE</CODE> is <TT>"NetStream.Publish.Idle"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_PUBLISH_START</CODE> is <TT>"NetStream.Publish.Start"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_RECORD_FAILED</CODE> is <TT>"NetStream.Record.Failed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_RECORD_NO_ACCESS</CODE> is <TT>"NetStream.Record.NoAccess"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_RECORD_START</CODE> is <TT>"NetStream.Record.Start"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_RECORD_STOP</CODE> is <TT>"NetStream.Record.Stop"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_SEEK_FAILED</CODE> is <TT>"NetStream.Seek.Failed"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_SEEK_NOTIFY</CODE> is <TT>"NetStream.Seek.Notify"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_UNPAUSE_NOTIFY</CODE> is <TT>"NetStream.Unpause.Notify"</TT>;
+</LI><LI CLASS="li-itemize"><CODE>NS_UNPUBLISH_SUCCESS</CODE> is <TT>"NetStream.Unpublish.Success"</TT>.
+</LI></UL><P> <A NAME="nchandler"></A> </P><!--TOC section NetConnection handlers-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc17">2.4</A>&#XA0;&#XA0;<A HREF="#nchandler">NetConnection handlers</A></H2><!--SEC END --><P> <A NAME="nchandler"></A> </P><P>You are able to redefine default <TT>OMS</TT> behaviour via <TT>NetConnection</TT> handlers.
+If the handler is undefined, the default value is applied by <TT>OMS</TT>. Some of
+the handlers support <CODE>error_info()</CODE> as return value. It is defined as
+</P><PRE CLASS="verbatim">error_info() = {error, Code, Args}
+Code = string()
+Args = [{string(), amf()}]
+</PRE><P>For example, in the case of
+</P><PRE CLASS="verbatim">{error, ?NC_CONNECT_REJECTED,
+  [{"description", "authentication failed"}]}
+</PRE><P><TT>OMS</TT> sends the following <CODE>onStatus</CODE> event back to the client:
+</P><PRE CLASS="verbatim">[{"code", "NetConnection.Connect.Rejected"},
+ {"level", "error"},
+ {"description", "authentication failed"}]
+</PRE><P> <A NAME="load1"></A> </P><!--TOC subsection load/1-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc18">2.4.1</A>&#XA0;&#XA0;<A HREF="#load1">load/1</A></H3><!--SEC END --><P> <A NAME="load1"></A> 
+</P><PRE CLASS="verbatim">NetConnection:load(Opts) -&gt; Ignore
+        Opts = [{atom(), string()}]
+        Ignore = term()
+</PRE><P>When <TT>OMS</TT> loads the application, this function is called if defined.
+<TT>Opts</TT> are application options defined in the section <TT>[options]</TT>
+of the corresponding application configuration file. The return value
+is ignored.</P><P> <A NAME="connectN"></A> </P><!--TOC subsection connect/N-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc19">2.4.2</A>&#XA0;&#XA0;<A HREF="#connectN">connect/N</A></H3><!--SEC END --><P> <A NAME="connectN"></A> 
+</P><PRE CLASS="verbatim">NetConnection:connect(Ctx, Arg1, ..., ArgN) -&gt; Result
+        Ctx = #call_ctx{}
+        Arg1 = ... = ArgN = amf()
+        Result = ok | error | ErrorInfo
+        ErrorInfo = error_info()
+</PRE><P>Default: <CODE>ok</CODE></P><P>This function is called everytime a new client connection is established.
+The number of arguments depends on <TT>ActionScript3.0</TT> <TT>connect()</TT> function.
+You can decline a connection with <CODE>ErrorInfo</CODE>; <CODE>error</CODE> is a 
+shorthand for <CODE>{error, ?NC_CONNECT_REJECTED, []}</CODE>.</P><P> <A NAME="close1"></A> </P><!--TOC subsection close/1-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc20">2.4.3</A>&#XA0;&#XA0;<A HREF="#close1">close/1</A></H3><!--SEC END --><P> <A NAME="close1"></A> 
+</P><PRE CLASS="verbatim">NetConnection:close(Ctx) -&gt; Ignore
+        Ctx = #call_ctx{}
+        Ignore = term()
+</PRE><P>This function is called everytime a connection is closed.
+The return value is ignored.</P><P> <A NAME="play2"></A> </P><!--TOC subsection play/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc21">2.4.4</A>&#XA0;&#XA0;<A HREF="#play2">play/2</A></H3><!--SEC END --><P> <A NAME="play2"></A> 
+</P><PRE CLASS="verbatim">NetConnection:play(Ctx, Name) -&gt; Result
+        Ctx = #call_ctx{}
+        Name = string()
+        Result = {play, StreamName} |
+                 {play_file, FileName} |
+                 {stream, StreamRef} |
+                 error | ErrorInfo
+        StreamName = FileName = string()
+        StreamRef = term()
+        ErrorInfo = error_info()
+</PRE><P>Default: <CODE>{play, Name}</CODE></P><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>play()</TT> function.
+<TT>Name</TT> is a name of a stream or a file to play.
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+if <CODE>{play, StreamName}</CODE> is returned, <TT>OMS</TT> will route all
+incoming packets from published stream <CODE>StreamName</CODE> to all subscribed players;
+</LI><LI CLASS="li-itemize">if <CODE>{play_file, FileName}</CODE> is returned, <TT>OMS</TT> starts playing FLV file
+<CODE>FileName</CODE>;
+</LI><LI CLASS="li-itemize">if <CODE>{stream, StreamRef}</CODE> is returned, you should handle the stream
+via your own <TT>NetStream</TT> module. <TT>StreamRef</TT> is an opaque <TT>Erlang/OTP</TT>
+term (likely a <TT>pid()</TT>) which will be passed to <TT>NetStream</TT> handlers.
+Note: your <TT>NetStream</TT> module should not play any data until
+<CODE>NetStream:play/2</CODE> handler is called;
+</LI><LI CLASS="li-itemize">if <CODE>ErrorInfo</CODE> is returned, the request is declined;
+</LI><LI CLASS="li-itemize"><CODE>error</CODE> is a shorthand for <CODE>{error, ?NS_PLAY_STREAM_NOT_FOUND, []}</CODE>.
+</LI></UL><P> <A NAME="publish3"></A> </P><!--TOC subsection publish/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc22">2.4.5</A>&#XA0;&#XA0;<A HREF="#publish3">publish/3</A></H3><!--SEC END --><P> <A NAME="publish3"></A> 
+</P><PRE CLASS="verbatim">NetConnection:publish(Ctx, Name, Type) -&gt; Result
+        Ctx = #call_ctx{}
+        Name = Type = string()
+        Result = {publish, StreamName} |
+                 {publish, StreamName, FileName} |
+                 {stream, StreamRef} |
+                 error | ErrorInfo
+        StreamName = FileName = string()
+        StreamRef = term()
+        ErrorInfo = error_info()
+</PRE><P>Default: <CODE>{publish, Name}</CODE></P><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>publish()</TT> function.
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+if <CODE>{publish, StreamName}</CODE> is returned, <TT>OMS</TT> will route all
+incoming packets from published stream <CODE>StreamName</CODE> to all subscribed players;
+</LI><LI CLASS="li-itemize"><CODE>{publish, StreamName, FileName}</CODE> is almost the same as
+<CODE>{publish, StreamName}</CODE> except that <TT>OMS</TT> also records the published stream
+in file <CODE>FileName</CODE>;
+</LI><LI CLASS="li-itemize">if <CODE>{stream, StreamRef}</CODE> is returned, you should handle the stream
+via your own <TT>NetStream</TT> module. <TT>StreamRef</TT> is an opaque <TT>Erlang/OTP</TT>
+term (likely a <TT>pid()</TT>) which will be passed to <TT>NetStream</TT> handlers;
+</LI><LI CLASS="li-itemize">if <CODE>ErrorInfo</CODE> is returned, the request is declined;
+</LI><LI CLASS="li-itemize"><CODE>error</CODE> is a shorthand for <CODE>{error, ?NS_PUBLISH_BAD_NAME, []}</CODE>.
+</LI></UL><P> <A NAME="streamstarted3"></A> </P><!--TOC subsection stream_started/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc23">2.4.6</A>&#XA0;&#XA0;<A HREF="#streamstarted3">stream_started/3</A></H3><!--SEC END --><P> <A NAME="streamstarted3"></A> 
+</P><PRE CLASS="verbatim">NetConnection:stream_started(Ctx, StreamRef, Type) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Type = play | publish
+</PRE><P>If defined, this function is called if <TT>NetStream</TT> <CODE>StreamRef</CODE>
+is started successfully. The return value is ignored.</P><P> <A NAME="streamstopped3"></A> </P><!--TOC subsection stream_stopped/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc24">2.4.7</A>&#XA0;&#XA0;<A HREF="#streamstopped3">stream_stopped/3</A></H3><!--SEC END --><P> <A NAME="streamstopped3"></A> 
+</P><PRE CLASS="verbatim">NetConnection:stream_stopped(Ctx, StreamRef, Type) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Type = play | publish
+</PRE><P>If defined, this function is called if <TT>NetStream</TT> <CODE>StreamRef</CODE>
+is stopped. The return value is ignored.</P><P> <A NAME="functionN"></A> </P><!--TOC subsection &#X2019;function&#X2019;/N-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc25">2.4.8</A>&#XA0;&#XA0;<A HREF="#functionN">&#X2019;function&#X2019;/N</A></H3><!--SEC END --><P> <A NAME="functionN"></A> 
+</P><PRE CLASS="verbatim">NetConnection:'function'(Ctx, Arg1, ..., ArgN) -&gt; Result
+        Ctx = #call_ctx{}
+        Arg1 = ... = ArgN = amf()
+        Res = {result, amf()} |
+              {error, amf()} |
+              {status, amf()} |
+              pass
+</PRE><P>Every <TT>ActionScript3.0</TT> <TT>call("function", resp, arg1, ..., argN)</TT> is handled
+by this function. If <TT>pass</TT> is returned, no response is sent. This
+handler has no default value: a connection crashes if a client calls
+undefined function.</P><P> <A NAME="nshandlers"></A> </P><!--TOC section NetStream handlers-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc26">2.5</A>&#XA0;&#XA0;<A HREF="#nshandlers">NetStream handlers</A></H2><!--SEC END --><P> <A NAME="nshandlers"></A> </P><P>You can redefine default <TT>OMS</TT> behaviour via <TT>NetStream</TT> handlers.
+To do that you have to return <CODE>{stream, StreamRef}</CODE> in
+<CODE>NetConnection:play/2</CODE> or <CODE>NetConnection:publish/3</CODE> function.
+<CODE>StreamRef</CODE> will be passed to every <TT>NetStream</TT> handlers.
+<TT>NetStream</TT> handlers do not have default values, so a connection
+crashes if a client calls undefined handler.</P><P> <A NAME="nsplay2"></A> </P><!--TOC subsection play/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc27">2.5.1</A>&#XA0;&#XA0;<A HREF="#nsplay2">play/2</A></H3><!--SEC END --><P> <A NAME="nsplay2"></A> 
+</P><PRE CLASS="verbatim">NetStream:play(Ctx, StreamRef) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+</PRE><P>This function is called immediately if <CODE>NetConnection:play/2</CODE>
+returns <CODE>{stream, StreamRef}</CODE>.</P><P>This handler indicates the stream activation or
+new subscriber addition, depending on the stream type.
+The return value is ignored.</P><P> <A NAME="nsseek3"></A> </P><!--TOC subsection seek/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc28">2.5.2</A>&#XA0;&#XA0;<A HREF="#nsseek3">seek/3</A></H3><!--SEC END --><P> <A NAME="nsseek3"></A> 
+</P><PRE CLASS="verbatim">NetStream:seek(Ctx, StreamRef, Offset) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Offset = number()
+</PRE><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>seek()</TT> function
+on stream <TT>StreamRef</TT>. The return value is ignored.</P><P> <A NAME="nspause4"></A> </P><!--TOC subsection pause/4-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc29">2.5.3</A>&#XA0;&#XA0;<A HREF="#nspause4">pause/4</A></H3><!--SEC END --><P> <A NAME="nspause4"></A> 
+</P><PRE CLASS="verbatim">NetStream:pause(Ctx, StreamRef, Flag, Offset) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Flag = true | false
+        Offset = number()
+</PRE><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>pause()</TT> function
+on stream <TT>StreamRef</TT>. The return value is ignored.</P><P> <A NAME="receiveAudio3"></A> </P><!--TOC subsection receiveAudio/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc30">2.5.4</A>&#XA0;&#XA0;<A HREF="#receiveAudio3">receiveAudio/3</A></H3><!--SEC END --><P> <A NAME="receiveAudio3"></A> 
+</P><PRE CLASS="verbatim">NetStream:receiveAudio(Ctx, StreamRef, Flag) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Flag = true | false
+</PRE><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>receiveAudio()</TT> function
+on stream <TT>StreamRef</TT>. The return value is ignored.</P><P> <A NAME="receiveVideo3"></A> </P><!--TOC subsection receiveVideo/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc31">2.5.5</A>&#XA0;&#XA0;<A HREF="#receiveVideo3">receiveVideo/3</A></H3><!--SEC END --><P> <A NAME="receiveVideo3"></A> 
+</P><PRE CLASS="verbatim">NetStream:receiveVideo(Ctx, StreamRef, Flag) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Flag = true | false
+</PRE><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>receiveVideo()</TT> function
+on stream <TT>StreamRef</TT>. The return value is ignored.</P><P> <A NAME="bufferTime3"></A> </P><!--TOC subsection bufferTime/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc32">2.5.6</A>&#XA0;&#XA0;<A HREF="#bufferTime3">bufferTime/3</A></H3><!--SEC END --><P> <A NAME="bufferTime3"></A> 
+</P><PRE CLASS="verbatim">NetStream:bufferTime(Ctx, StreamRef, MilliSecs) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        MilliSecs = positive_integer()
+</PRE><P>This function is called if a client sets <TT>ActionScript3.0</TT> <TT>bufferTime</TT> property
+on stream <TT>StreamRef</TT>. The return value is ignored.</P><P> <A NAME="nsclose2"></A> </P><!--TOC subsection close/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc33">2.5.7</A>&#XA0;&#XA0;<A HREF="#nsclose2">close/2</A></H3><!--SEC END --><P> <A NAME="nsclose2"></A> 
+</P><PRE CLASS="verbatim">NetStream:close(Ctx, StreamRef) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+</PRE><P>This function is called when a client calls <TT>ActionScript3.0</TT> <TT>close()</TT> function
+on stream <TT>StreamRef</TT> or when the corresponding <TT>NetConnection</TT> is closed.
+The return value is ignored.</P><P> <A NAME="route3"></A> </P><!--TOC subsection route/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc34">2.5.8</A>&#XA0;&#XA0;<A HREF="#route3">route/3</A></H3><!--SEC END --><P> <A NAME="route3"></A> 
+</P><PRE CLASS="verbatim">NetStream:route(Ctx, StreamRef, RTMP) -&gt; Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        RTMP = #rtmp_msg{}
+</PRE><P>This function is called everytime an <CODE>RTMP</CODE> audio/video/data message is
+received for stream <CODE>StreamRef</CODE>. The return value is ignored.</P><P> <A NAME="omsapi"></A> </P><!--TOC section <TT>OMS</TT> API-->
+<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc35">2.6</A>&#XA0;&#XA0;<A HREF="#omsapi"><TT>OMS</TT> API</A></H2><!--SEC END --><P> <A NAME="omsapi"></A> </P><P><TT>OMS</TT> exports several useful functions in <TT>oms_api</TT> module.
+These functions are mostly needed for <TT>NetStream</TT> handlers.</P><P> <A NAME="send2"></A> </P><!--TOC subsection send/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc36">2.6.1</A>&#XA0;&#XA0;<A HREF="#send2">send/2</A></H3><!--SEC END --><P> <A NAME="send2"></A> 
+</P><PRE CLASS="verbatim">send(RTMPSock, RTMP) -&gt; ok
+        RTMPSock = rtmp_socket()
+        RTMP = #rtmp_msg{}
+</PRE><P>Performs asynchronous send of <CODE>RTMP</CODE> message on &#X201C;RTMP socket&#X201D;.</P><P> <A NAME="syncsend2"></A> </P><!--TOC subsection sync_send/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc37">2.6.2</A>&#XA0;&#XA0;<A HREF="#syncsend2">sync_send/2</A></H3><!--SEC END --><P> <A NAME="syncsend2"></A> 
+</P><PRE CLASS="verbatim">sync_send(RTMPSock, RTMP) -&gt; ok | {error, Reason}
+        RTMPSock = rtmp_socket()
+        RTMP = #rtmp_msg{}
+        Reason = atom()
+</PRE><P>Performs synchronous send of <CODE>RTMP</CODE> message on &#X201C;RTMP socket&#X201D;.
+Unlike <CODE>send/2</CODE>, this function waits until <CODE>RTMPSock</CODE> writes
+a data in a socket.</P><P> <A NAME="alloccsid1"></A> </P><!--TOC subsection alloc_csid/1-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc38">2.6.3</A>&#XA0;&#XA0;<A HREF="#alloccsid1">alloc_csid/1</A></H3><!--SEC END --><P> <A NAME="alloccsid1"></A> 
+</P><PRE CLASS="verbatim">alloc_csid(RTMPSock) -&gt; {ok, CSID} | {error, Reason}
+        RTMPSock = rtmp_socket()
+        CSID = non_neg_integer() &gt; 1
+        Reason = atom()
+</PRE><P>Allocates next free chunk stream id on &#X201C;RTMP socket&#X201D;.</P><P> <A NAME="apiclose1"></A> </P><!--TOC subsection close/1-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc39">2.6.4</A>&#XA0;&#XA0;<A HREF="#apiclose1">close/1</A></H3><!--SEC END --><P> <A NAME="apiclose1"></A> 
+</P><PRE CLASS="verbatim">close(RTMPSock) -&gt; ok
+        RTMPSock = rtmp_socket()
+</PRE><P>Closes &#X201C;RTMP socket&#X201D;. Note: closing an &#X201C;RTMP socket&#X201D; triggers
+<CODE>NetConnection:close/1</CODE> and <CODE>NetStream:close/2</CODE> handlers
+execution.</P><P> <A NAME="getopts2"></A> </P><!--TOC subsection getopts/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc40">2.6.5</A>&#XA0;&#XA0;<A HREF="#getopts2">getopts/2</A></H3><!--SEC END --><P> <A NAME="getopts2"></A> 
+</P><PRE CLASS="verbatim">getopts(RTMPSock, OptNames) -&gt; {ok, Opts} | {error, Reason}
+        RTMPSock = rtmp_socket()
+        OptNames = [OptName]
+        Opts = [{OptName, Value}]
+        OptName = chunk_size |
+                  window_size |
+                  peer_chunk_size |
+                  peer_window_size
+        Value = non_neg_integer()
+        Reason = atom()
+</PRE><P>Returns options of &#X201C;RTMP socket&#X201D;.</P><P> <A NAME="setopts2"></A> </P><!--TOC subsection setopts/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc41">2.6.6</A>&#XA0;&#XA0;<A HREF="#setopts2">setopts/2</A></H3><!--SEC END --><P> <A NAME="setopts2"></A> 
+</P><PRE CLASS="verbatim">setopts(RTMPSock, Opts) -&gt; ok
+        RTMPSock = rtmp_socket()
+        Opts = [{OptName, Value}]
+        OptName = chunk_size |
+                  window_size |
+                  peer_window_size
+        Value = non_neg_integer()
+</PRE><P>Sets options on &#X201C;RTMP socket&#X201D;.</P><P> <A NAME="registerstream3"></A> </P><!--TOC subsection register_stream/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc42">2.6.7</A>&#XA0;&#XA0;<A HREF="#registerstream3">register_stream/3</A></H3><!--SEC END --><P> <A NAME="registerstream3"></A> 
+</P><PRE CLASS="verbatim">register_stream(AppName, Name, StreamRef) -&gt; ok | {error, Reason}
+        AppName = string()
+        Name = string()
+        StreamRef = term()
+        Reason = atom()
+</PRE><P>Registers stream <CODE>StreamRef</CODE> with <CODE>Name</CODE> for application <CODE>AppName</CODE>
+on all nodes.</P><P> <A NAME="unregisterstream2"></A> </P><!--TOC subsection unregister_stream/2-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc43">2.6.8</A>&#XA0;&#XA0;<A HREF="#unregisterstream2">unregister_stream/2</A></H3><!--SEC END --><P> <A NAME="unregisterstream2"></A> 
+</P><PRE CLASS="verbatim">unregister_stream(AppName, Name) -&gt; ok | {error, Reason}
+        AppName = string()
+        Name = string()
+        Reason = atom()
+</PRE><P>Unregisters stream <CODE>Name</CODE> for application <CODE>AppName</CODE> on all nodes.</P><P> <A NAME="allstreams1"></A> </P><!--TOC subsection all_streams/1-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc44">2.6.9</A>&#XA0;&#XA0;<A HREF="#allstreams1">all_streams/1</A></H3><!--SEC END --><P> <A NAME="allstreams1"></A> 
+</P><PRE CLASS="verbatim">all_streams(AppName) -&gt; [{Name, StreamRef}]
+        AppName = string()
+        Name = string()
+        StreamRef = term()
+</PRE><P>Returns all registered streams for application <CODE>AppName</CODE> from all nodes.</P><P> <A NAME="allsessions1"></A> </P><!--TOC subsection all_sessions/1-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc45">2.6.10</A>&#XA0;&#XA0;<A HREF="#allsessions1">all_sessions/1</A></H3><!--SEC END --><P> <A NAME="allsessions1"></A> 
+</P><PRE CLASS="verbatim">all_sessions(AppName) -&gt; [{Session, Addr}]
+        AppName = string()
+        Session = pid()
+        Addr = {ip_addr(), port()}
+</PRE><P>Returns all active sessions for application <CODE>AppName</CODE> from all nodes.</P><P> <A NAME="call3"></A> </P><!--TOC subsection call/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc46">2.6.11</A>&#XA0;&#XA0;<A HREF="#call3">call/3</A></H3><!--SEC END --><P> <A NAME="call3"></A> 
+</P><PRE CLASS="verbatim">call(Session, Function, Args) -&gt; ok
+        Session = pid()
+        Function = atom()
+        Args = [amf()]
+</PRE><P>Calls <CODE>Function(Arg1, ..., ArgN)</CODE> on client side, where
+<TT>Args = [Arg1, ..., ArgN]</TT>. <TT>Session</TT> is a part of
+call context, i.e. <CODE>#call_ctx.session</CODE>.</P><P> <A NAME="streaminfo3"></A> </P><!--TOC subsection stream_info/3-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc47">2.6.12</A>&#XA0;&#XA0;<A HREF="#streaminfo3">stream_info/3</A></H3><!--SEC END --><P> <A NAME="streaminfo3"></A> 
+</P><PRE CLASS="verbatim">stream_info(Session, Stream, Code) -&gt; ok
+        Session = pid()
+        Stream = non_neg_integer()
+        Code = string()
+</PRE><P>This is the same as <TT>stream_info(Session, Stream, Code, [])</TT>.</P><P> <A NAME="streaminfo4"></A> </P><!--TOC subsection stream_info/4-->
+<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc48">2.6.13</A>&#XA0;&#XA0;<A HREF="#streaminfo4">stream_info/4</A></H3><!--SEC END --><P> <A NAME="streaminfo4"></A> 
+</P><PRE CLASS="verbatim">stream_info(Session, Stream, Code, Opts) -&gt; ok
+        Session = pid()
+        Stream = non_neg_integer()
+        Code = string()
+        Opts = [{string(), amf()}]
+</PRE><P>Sends <CODE>onStatus</CODE> event in session <CODE>Session</CODE> for stream <CODE>Stream</CODE>
+with information code <CODE>Code</CODE> and information options <CODE>Opts</CODE>.</P><!--CUT END -->
+<!--HTMLFOOT-->
+<!--ENDHTML-->
+<!--FOOTER-->
+<HR SIZE=2><BLOCKQUOTE CLASS="quote"><EM>This document was translated from L<sup>A</sup>T<sub>E</sub>X by
+</EM><A HREF="http://hevea.inria.fr/index.html"><EM>H</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>V</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>A</EM></A><EM>.</EM></BLOCKQUOTE></BODY>
+</HTML>

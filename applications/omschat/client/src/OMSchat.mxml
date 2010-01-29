@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application  xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" initialize="init()">
+
+<mx:Script>
+        <![CDATA[
+        	import mx.controls.CheckBox;
+        	import mx.controls.Image;
+        	import mx.controls.TextArea;
+        	import mx.containers.Canvas;
+        	import mx.controls.Label;
+        	import flash.media.Microphone;
+                import flash.media.SoundCodec;
+        
+    		import mx.core.UIComponent; 
+    		import mx.containers.VBox;
+ 			import mx.controls.TextInput;
+ 			import mx.controls.Button;
+ 			import mx.controls.ComboBox;
+ 			import flash.events.Event;
+ 	
+       public var myconn:NetConnection;
+       public var nsin:NetStream;
+       public var nsout:NetStream;	
+       public var camera:Camera;
+       public var micro:Microphone;
+       public var videoin:Video; 
+       public var videoout:Video;
+       public var videoHolderin:UIComponent;
+       public var videoHolderout:UIComponent;
+       public var boxlogin:VBox;
+       public var laburl:Label;
+       public var logturl:TextInput;
+       public var labpass:Label;
+       public var logtpass:TextInput;
+       public var lablogtitle:Label;     
+       public var loginbutton:Button;
+       public var pubbutton:Button;
+       public var maincan:Canvas;
+       public var labtitre:Label;
+       public var panin:Panel;
+       public var panout:Panel;
+       public var combox:ComboBox;
+       public var console:TextArea;
+       public var logo:Image;
+       public var cb:CheckBox; 
+       private var loader:Loader;
+       public var logot:Bitmap;
+ 	   public var myTimer:Timer
+        
+        
+       public function AZAZAZAZAZ(re:Event):void
+       			{
+       				console.text += "\nazazazazaz";
+       			} 
+        
+       public function init():void
+            	{
+           	
+            	boxlogin = new VBox();
+            	laburl = new Label();	
+            	logturl = new TextInput();
+            	logturl.visible = true;
+            	logturl.text = "rtmp://localhost/omschat";
+				labpass = new Label();
+            	logtpass = new TextInput();
+            	logtpass.visible = true;
+            	lablogtitle = new Label();
+            	lablogtitle.text = "Login Screen";
+            		
+            	laburl.text = "Server's URL";
+            	labpass.text = "Nickname";
+            	boxlogin.addChild(lablogtitle);
+            	boxlogin.addChild(laburl);	
+            	boxlogin.addChild(logturl);
+            	boxlogin.addChild(labpass);
+            	boxlogin.addChild(logtpass);
+            	boxlogin.visible = true;
+
+            	boxlogin.autoLayout = true;
+            	boxlogin.width = 300;
+            	boxlogin.height = 200;
+            	
+            	
+            	loginbutton = new Button();
+            	loginbutton.label = "Connect";
+            	loginbutton.id = "connectb";
+            	loginbutton.addEventListener(MouseEvent.CLICK,busconnectclicked);
+            	boxlogin.addChild(loginbutton);
+            	mainpan.addChild(boxlogin);	
+            	myconn = new NetConnection();
+				myconn.client = this;
+            	//build_login();
+            
+            	}
+            	
+         public function onImageDataHandlerIn(imageData:Object):void 
+         {
+         console.text = "Buffer length in:" + nsin.bufferLength.toString() + " buftime :" + nsin.bufferTime.toString() + " Byteloaded :" + nsin.bytesLoaded.toString() + " Total bl :" + nsin.bytesTotal.toString() + " currentftp :" + nsin.currentFPS.toString() + "  livedelay :" + nsin.liveDelay; 	
+         console.text += "\nBuffer length out:" + nsout.bufferLength.toString() + " buftime :" + nsout.bufferTime.toString() + " Byteloaded :" + nsout.bytesLoaded.toString() + " Total bl :" + nsout.bytesTotal.toString()  + " currentftp :" + nsout.currentFPS.toString() + "  livedelay :" + nsout.liveDelay; 	
+         console.text += "\nCamera fps:" + camera.currentFPS;
+         
+         }
+         
+         
+         public function onImageDataHandlerOut(imageData:Object):void 
+         {
+         console.text = "Buffer length in:" + nsin.bufferLength.toString() + " buftime :" + nsin.bufferTime.toString() + " Byteloaded :" + nsin.bytesLoaded.toString() + " Total bl :" + nsin.bytesTotal.toString()  ; 	
+         	
+         }
+             	
+        public function Updatememberlist(result:Array):void
+        	{
+        		var length:int = result.length;	
+        	var res:Array;
+        	res = new Array();
+        	var item:Object = combox.selectedItem;
+        	
+        	
+        	
+			for (var i:int=0;i<length;i++)
+				{
+				var temp:String;
+				temp = result[i];
+				res[i+1] = {label:temp,data:i};
+				res[0] = {label:"Unsubscribe",data:0};
+				}		
+        	combox.dataProvider = res;
+        	combox.selectedItem = item;
+        	}
+        public function test():void
+        	{
+        		
+        		console.text += "\ncoucouc";
+        	}
+        private function ontest():void
+        	{
+        		console.text += "\nsdfs";
+        	}   	
+        public function init_main():void
+        	{
+        	maincan = new Canvas();
+        	maincan.width = 800;
+        	maincan.height = 550;
+        	labtitre = new Label();
+        	
+        	loader = new Loader();
+        	
+        	loader.load(new URLRequest("process-one_logo.png"));
+        	
+        	logot = new Bitmap();
+        
+        	logot = Bitmap(loader.content);
+        	
+        	
+        	
+        	labtitre.text = "OMS Chat, welcome";
+        	//maincan.addChild(labtitre);
+        	mainpan.addChild(maincan);	
+        	init_cam();
+        	//init_mic();
+        	
+        	videoin = new Video();
+            videoHolderin = new UIComponent();	
+            videoHolderin.visible = true;
+            //videoHolderin.x = 50;
+            //videoHolderin.y = 50;	
+            videoHolderin.width = 320;
+            videoHolderin.height = 210;	
+            videoHolderin.addChild(videoin);
+            panin = new Panel();
+            panin.x = 30;
+            panin.y = 50;
+            panin.height = 340;
+            //panin.addChild(logot);
+            panin.addChild(videoHolderin);
+            combox = new ComboBox();
+			maincan.addChild(panin);
+			combox.y = 30;
+			combox.addEventListener(Event.CHANGE, pubchange);
+			panin.addChild(combox);
+			
+			if (camera != null)
+				{
+				//camera.setQuality(0,100);
+				videoout = new Video();
+            	videoHolderout = new UIComponent();	
+            	videoHolderout.visible = true;
+            	//videoHolderout.x = 50;
+            	//videoHolderout.y = 350;	
+            	videoHolderout.width = 320;
+            	videoHolderout.height = 210;	
+            	videoout.attachCamera(camera);	
+            	videoHolderout.addChild(videoout);
+            	panout = new Panel();
+            	panout.x = 380;
+            	panout.y = 50;
+            	panout.height = 340;
+            	panout.addChild(videoHolderout);
+            	pubbutton = new Button();
+            	pubbutton.label = "Publish";
+            	pubbutton.addEventListener(MouseEvent.CLICK,publishstream);
+            	var lbn:Label = new Label();
+            	lbn.text = "Record";
+            	cb = new CheckBox();
+            	panout.addChild(pubbutton);
+            	panout.addChild(lbn);
+            	panout.addChild(cb);
+				maincan.addChild(panout);
+				
+				}
+			
+			var resp:Responder;
+            resp = new Responder(glamresult,glamerror);
+            console = new TextArea();
+            console.width = 600;
+            console.height = 100;
+            console.y = 400;
+            console.x = 70;
+			maincan.addChild(console);		
+            myconn.call("getmemberlist",resp);
+            
+            console.text += "Connected to :" + logturl.text;
+
+          
+        	}    
+        	
+
+        public function publishstream(e:MouseEvent):void
+        	{
+        	console.text += "\npublihing";
+        	nsout.attachCamera(camera);
+        	micro = Microphone.getMicrophone();
+                micro.codec = SoundCodec.SPEEX;
+                micro.setSilenceLevel(0);
+        	
+        	nsout.attachAudio(micro);	
+        	
+        	
+        		myTimer = new Timer(1000, 0);
+        		myTimer.addEventListener(TimerEvent.TIMER, onImageDataHandlerIn);
+        		myTimer.start();
+        	
+        	
+        	
+        	
+        	
+        	
+                    
+            if (micro != null) {
+                micro.setUseEchoSuppression(true);
+                micro.addEventListener(ActivityEvent.ACTIVITY, activityHandler);
+                micro.addEventListener(StatusEvent.STATUS, statusHandler);
+            	}
+            var option:String = new String;
+            if (cb.selected == true)
+            	{
+            	option = "record";	
+            	}
+            	else
+            	option = null;
+            	
+        	nsout.publish(logtpass.text,option);
+        	pubbutton.label = "Unpublish";
+        	pubbutton.removeEventListener(MouseEvent.CLICK,publishstream);
+        	pubbutton.addEventListener(MouseEvent.CLICK,unpublishstream);	
+        	}
+        
+        
+           private function activityHandler(event:ActivityEvent):void {
+            trace("activityHandler: " + event);
+        }
+
+        private function statusHandler(event:StatusEvent):void {
+            trace("statusHandler: " + event);
+        }
+        
+        
+        public function unpublishstream(e:MouseEvent):void
+        	{
+        	console.text += "\nunpublishing";
+        	nsout.close();
+        	videoout.clear();
+        	pubbutton.label = "Publish";
+        	pubbutton.removeEventListener(MouseEvent.CLICK,unpublishstream);
+        	pubbutton.addEventListener(MouseEvent.CLICK,publishstream);	
+        	}
+        
+        
+        public function pubchange(e:Event):void
+        	{
+        	nsin.close();
+        	var medname:String =e.target.selectedItem.label;
+        	
+        	if (medname != "Unsubscribe")
+        		{ 
+        		videoin.clear();
+        		videoin.attachNetStream(nsin);
+        		myTimer = new Timer(1000, 0);
+        		myTimer.addEventListener(TimerEvent.TIMER, onImageDataHandlerIn);
+        		myTimer.start();
+        		nsin.play(medname);
+        		}  	
+        		else
+        		{
+        		console.text += "\nUnsubscribe request";
+        		videoin.clear();
+        		videoin.attachNetStream(null);
+        		}
+        	}
+        
+        private function glamresult(result:Array):void
+        	{
+        	var length:int = result.length;	
+        	var res:Array;
+        	res = new Array();
+        	var item:Object = combox.selectedItem;
+        	console.text += "received answer to gatmemberlist";
+        	
+        	
+			for (var i:int=0;i<length;i++)
+				{
+				var temp:String;
+				temp = result[i];
+				res[i+1] = {label:temp,data:i};
+				res[0] = {label:"Unsubscribe",data:0};
+				}		
+        	combox.dataProvider = res;
+        	combox.selectedItem = item;
+        	}	
+        	
+        private function glamerror(result:Array):void
+        	{
+        			
+        	}
+        	
+        	
+        public function init_mic():void
+           		{
+           			
+           			//micro = new Microphone();
+           			//micro = Microphone.getMicrophone(1);
+           			if (micro == null)
+           				{
+						
+           				}
+           				else
+           				{
+           				
+           				}
+					
+					
+           		}
+           		
+            	
+        public function init_cam():void
+            	{
+            		camera = Camera.getCamera();
+            			//if (camera == null)
+            			//	{
+				//										//
+            //				}
+            //				else	
+            //				camera.setMotionLevel(100);			
+            	}
+ 
+ 
+ 
+           	    	
+        public function onNCStatus(event:NetStatusEvent):void 
+				{
+   				if(event.info.code == "NetConnection.Connect.Success") 
+   					{
+   						
+   					var customClientIn:Object = new Object();
+                	customClientIn.onImageData = onImageDataHandlerIn;
+                	
+                	var customClientOut:Object = new Object();
+                	customClientOut.onImageData = onImageDataHandlerOut;
+                		
+                		
+                		
+   					mainpan.removeAllChildren();
+					nsout = new NetStream(myconn);
+					nsin = new NetStream(myconn);
+                                        //nsin.bufferTime = 0.1;
+					
+					
+					nsout.client = customClientOut;
+					nsin.client = customClientIn;
+					
+					
+					init_main();
+   					}
+   					else
+   					{
+					var errormes:Label = new Label();
+					errormes.text = "Error, cannot connect to server";
+					boxlogin.addChild(errormes);
+					if (console != null)
+						console.text += "\nDisconnected from server:" + event.info.toString();
+   					}
+	
+				}
+				
+		private function busconnectclicked(e:Event):void
+				{
+            	myconn.addEventListener("netStatus", onNCStatus);	
+            	var client:Object = myconn.client;
+				//var simpleRemoteCalls:SimpleRemoteCalls = this;
+
+				myconn.client = this;
+				myconn.connect(logturl.text,logtpass.text);	
+				}
+				
+        
+          ]]>
+</mx:Script>   
+<mx:Panel id="mainpan">
+<mx:Image source="./process-one_logo.png" x="20" />
+</mx:Panel>
+  	
+</mx:Application>

@@ -1,0 +1,120 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+ETCDIR = @sysconfdir@/oms
+ETCAPPDIR = $(ETCDIR)/apps
+BINDIR = @bindir@
+LOGDIR = @localstatedir@/log/oms
+DBDIR = @localstatedir@/lib/oms
+OMSDIR = @ERLANG_LIB_DIR@/oms-@PACKAGE_VERSION@
+OMSDIRLINK = @libdir@/oms
+BEAMDIR = $(OMSDIR)/ebin
+BEAMDIRLINK = $(OMSDIRLINK)/ebin
+BEAMAPPDIR = $(BEAMDIR)/apps
+BEAMAPPDIRLINK = $(BEAMDIRLINK)/apps
+INCLUDEDIR = $(OMSDIR)/include
+PRIVDIR = $(OMSDIR)/priv
+SODIR = $(PRIVDIR)/lib
+ERL_INTERFACE_DIR = @ERLANG_LIB_DIR_erl_interface@
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+ERLANG_CFLAGS = -I $(ERL_INTERFACE_DIR)/include -I @ERLANG_ROOT_DIR@/usr/include
+ERLANG_LIBS = -L$(ERL_INTERFACE_DIR)/lib -lerl_interface -lei
+
+# Assume Linux-style dynamic library flags
+DYNAMIC_LIB_CFLAGS = -fpic -shared
+ifeq ($(shell uname),Darwin)
+    DYNAMIC_LIB_CFLAGS = -fPIC -bundle -flat_namespace -undefined suppress
+endif
+ifeq ($(shell uname),SunOs)
+    DYNAMIC_LIB_CFLAGS = -KPIC -G -z text
+endif
+
+src: beams rtmp_codec_drv.so
+
+beams:
+	@ERL@ -noinput +B -eval \
+	'case make:all() of up_to_date -> halt(0); error -> halt(1) end.'
+
+rtmp_codec_drv.so: c_src/rtmp_codec_drv.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+	c_src/rtmp_codec_drv.c \
+	$(ERLANG_LIBS) \
+	$(ERLANG_CFLAGS) \
+	-o rtmp_codec_drv.so \
+	$(DYNAMIC_LIB_CFLAGS)
+
+all: src examples
+
+clean: 
+	rm -rf ebin/*.beam
+	rm -rf ebin/apps/*.beam
+	rm -f erl_crash.dump
+	rm -rf *.tmp
+	rm -rf *.so
+
+distclean: clean
+	rm -rf autom4te.cache
+	rm -f config.status
+	rm -rf *.log
+	rm -f Makefile
+	rm -f ebin/oms.app
+	rm -rf *.cfg
+	rm -f omsctl
+	rm -rf db
+	rm -f include/oms.hrl
+
+examples:
+	sed -e "s*@app_conf_dir@*applications/app_configs*" \
+		-e "s*@app_beam_dir@*ebin/apps*" \
+		oms.cfg.template > oms.cfg
+	sed -e "s*@oms_beam_dir@*ebin*" \
+		-e "s*@oms_config_dir@*.*" \
+		-e "s*@oms_log_dir@*.*" \
+		-e "s*@erl@*@ERL@*" \
+		-e "s*@oms_mnesia_dir@*.*" \
+		omsctl.cfg.template > omsctl.cfg
+	sed -e "s*@oms_config_dir@*.*" \
+		omsctl.template > omsctl
+	chmod 755 omsctl
+
+install:
+	install -d $(ETCDIR)
+	install -d $(ETCAPPDIR)
+	sed -e "s*@app_conf_dir@*$(ETCAPPDIR)*" \
+		-e "s*@app_beam_dir@*$(BEAMAPPDIRLINK)*" \
+		oms.cfg.template > oms.cfg.tmp
+	[ -f $(ETCDIR)/oms.cfg ] \
+		|| install -b -m 644 oms.cfg.tmp $(ETCDIR)/oms.cfg
+	sed -e "s*@oms_beam_dir@*$(BEAMDIRLINK)*" \
+		-e "s*@oms_config_dir@*$(ETCDIR)*" \
+		-e "s*@oms_log_dir@*$(LOGDIR)*" \
+		-e "s*@erl@*@ERL@*" \
+		-e "s*@oms_mnesia_dir@*$(DBDIR)*" \
+		omsctl.cfg.template > omsctl.cfg.tmp
+	[ -f $(ETCDIR)/omsctl.cfg ] \
+		|| install -b -m 644 omsctl.cfg.tmp $(ETCDIR)/omsctl.cfg
+	sed -e "s*@oms_config_dir@*$(ETCDIR)*" \
+		omsctl.template > omsctl.tmp
+	install -b -m 755 omsctl.tmp $(BINDIR)/omsctl
+	rm -rf *.tmp
+	install -d $(BEAMDIR)
+	install -d $(BEAMAPPDIR)
+	ln -sf $(OMSDIR) $(OMSDIRLINK)
+	install -m 644 ebin/*.app $(BEAMDIR)
+	install -m 644 ebin/*.beam $(BEAMDIR)
+	install -d $(INCLUDEDIR)
+	install -m 644 include/*.hrl $(INCLUDEDIR)
+	install -d $(SODIR)
+	install -m 755 *.so $(SODIR)
+	install -d -m 640 $(LOGDIR)
+	install -d $(DBDIR)
+
+uninstall:
+	rm -rf $(ETCDIR)
+	rm -rf $(OMSDIR)
+	rm -f $(OMSDIRLINK)
+	rm -rf $(LOGDIR)
+	rm -rf $(BINDIR)/omsctl
+	rm -rf $(DBDIR)

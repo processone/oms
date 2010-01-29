@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+<mx:Script>
+        <![CDATA[
+       	
+
+     		import flash.net.NetConnection;
+			import flash.net.NetStream;
+            import flash.net.Responder;
+           
+           
+           	private var myconn:NetConnection;
+           	private var resp:Responder;
+           	private var log_resp:Responder;
+			public 	var myRemoteSO:SharedObject;
+
+
+       		public function connect():void
+           		{
+           		debugt.text = "Connection attemp";
+                        NetConnection.defaultObjectEncoding = ObjectEncoding.AMF0;
+           		myconn = new NetConnection();
+            	myconn.objectEncoding = ObjectEncoding.AMF0;
+            	myconn.addEventListener("netStatus", onNCStatus);	
+				myconn.connect(UIrtmpURI.text);	
+           		debugt.text += "\n" + "Connecting to: " + UIrtmpURI.text;	
+           		}
+           		
+           	public function SOCreate():void
+           		{
+           		debugt.text += "\n" + "Shared OBject creation request sent";
+           		myRemoteSO = SharedObject.getRemote(SOName.text, myconn.uri, true);
+           		myRemoteSO.addEventListener(SyncEvent.SYNC,SOSync);
+				myRemoteSO.connect(myconn);	
+           		//myRemoteSO.setProperty("First","first value");	
+           		}	
+           		
+           	public function onNCStatus(event:NetStatusEvent):void 
+					{
+   					debugt.text += "\nconnection event"
+   					if(event.info.code == "NetConnection.Connect.Success") 
+   						{
+						debugt.text = "\n" + "Connection successfull";
+   						}
+   						else
+   						{
+   						debugt.text += "\n" + event.info.code;
+   						}
+					}
+			
+			
+			public function setProperty():void
+				{
+					myRemoteSO.setProperty(UIKey.text,UIValue.text);
+				}
+					
+			
+			public function flushSO():void
+				{
+				myRemoteSO.flush();	
+				}
+			
+			public function del():void
+				{
+				myRemoteSO.close();
+				}
+			
+			
+			public function clearSO():void
+				{
+				myRemoteSO.clear();	
+				}
+			
+					
+			public function SOSync(event:SyncEvent):void
+				{
+					debugt.text += "\n" + "SO Sync event from server: " + event.toString() + "\n" ;
+					var idx:int;
+				
+        			debugt.text += myRemoteSO.data.test;
+					SOList.dataProvider = myRemoteSO.data;
+				}		
+					
+          ]]>
+</mx:Script>   
+       	
+
+	<mx:Panel x="23" y="10" width="746" height="498" layout="absolute">
+		<mx:TextInput x="232" y="18" id="UIrtmpURI" text="rtmp://localhost/SOTestExemple"/>
+		<mx:Label x="128" y="20" text="RTMP server:"/>
+		<mx:Button x="526" y="18" label="Connect" click="connect()"/>
+		<mx:HRule x="69" y="46" width="603" height="27"/>
+		<mx:Label x="69" y="92" text="Shared object name:"/>
+		<mx:TextInput x="232" y="90" id="SOName"/>
+		<mx:Button x="526" y="90" label="Connect Shared Object" click="SOCreate()"/>
+		<mx:Label x="131" y="131" text="Persistent"/>
+		<mx:CheckBox x="232" y="131" id="UIPersistant"/>
+		<mx:HRule x="69" y="172" width="603" height="9"/>
+		<mx:TextInput x="149" y="202" id="UIKey"/>
+		<mx:TextInput x="149" y="254" id="UIValue"/>
+		<mx:List x="483" y="222" height="226" width="189" id="SOList"></mx:List>
+		<mx:VRule x="389" y="202" width="3" height="246"/>
+		<mx:Label x="69" y="204" text="Key"/>
+		<mx:Label x="69" y="256" text="Value"/>
+		<mx:Button x="149" y="312" label="Set property" width="160" id="buSetProperty" click="setProperty()"/>
+		<mx:HRule x="69" y="361" width="312" height="4"/>
+		<mx:Button x="69" y="403" label="Flush SO" id="buFlushSO" click="flushSO()"/>
+		<mx:Button x="270" y="403" label="Close SO" width="89" id="buCloseso" click="del()"/>
+		<mx:Button x="169" y="403" label="ClearSO" id="clearso"/>
+	</mx:Panel>
+	<mx:Panel x="23" y="516" width="746" height="111" layout="absolute">
+		<mx:Label x="0" y="-25" text="Debug Console" color="#FFFFFF"/>
+		<mx:TextArea x="0" y="1" width="726" height="70" id="debugt"/>
+	</mx:Panel>
+	
+</mx:Application>

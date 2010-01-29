@@ -1,0 +1,9 @@
+NODE=oms
+HOST=`hostname -f`
+POLL=true
+ERL=@erl@
+BEAMDIR=@oms_beam_dir@
+CONFIG=@oms_config_dir@/oms.cfg
+LOG=@oms_log_dir@/oms.log
+ERLANG_LOG=@oms_log_dir@/erlang.log
+MNESIADIR=@oms_mnesia_dir@/db/$NODE

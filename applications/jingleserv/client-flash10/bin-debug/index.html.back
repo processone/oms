@@ -1,0 +1,163 @@
+	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>MUCek</title>
+
+    <link rel="stylesheet" type="text/css" href="libs/ext/resources/css/ext-all.css" />
+    <link rel="stylesheet" type="text/css" href="resources/css/mucek.css"/>
+	<link rel="stylesheet" type="text/css" href="resources/css/html_common.css"/>
+    <script src="AC_OETags.js" language="javascript"></script>
+    
+    
+    <script type="text/javascript" src="libs/ext/adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="libs/ext/ext-all-debug.js"></script>
+
+    <script type="text/javascript" src="libs/jsjac/jsjac.js"></script>
+
+    <script type="text/javascript" src="parameters.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="l10n.js"></script>
+    <script type="text/javascript" src="model.js"></script>
+    <script type="text/javascript" src="roster.js"></script>
+    <script type="text/javascript" src="chat-tab.js"></script>
+    <script type="text/javascript" src="login-window.js"></script>
+    <script type="text/javascript" src="ban-window.js"></script>
+    <script type="text/javascript" src="mucek.js"></script>
+    <script type="text/javascript">
+      function endCall(jid) {
+			var flashapp = document.getElementById("FlashyJingle");
+			flashapp.endCall(jid.toString());
+      }
+      
+      function initiateCall(jid) {
+      	var flashapp = document.getElementById("FlashyJingle");
+		flashapp.initiateCall(jid.toString);
+
+      }
+      
+      function jingleStanzaRecv(xmlstr) {
+		var flashapp = document.getElementById("FlashyJingle");
+          flashapp.jingleStanzaRecv(xmlstr);
+      }
+      
+      
+      function setOurJid(jid) {
+		var flashapp = document.getElementById("FlashyJingle");
+          flashapp.setmyjid(jid.toString());
+      }
+      
+      
+      function connectionStutusChanged(connected) {
+
+      }
+      
+      
+    </script>
+
+<script language="JavaScript" type="text/javascript">
+<!--
+// -----------------------------------------------------------------------------
+// Globals
+// Major version of Flash required
+var requiredMajorVersion = 9;
+// Minor version of Flash required
+var requiredMinorVersion = 0;
+// Minor version of Flash required
+var requiredRevision = 124;
+// -----------------------------------------------------------------------------
+// -->
+</script>
+
+ </head>
+ 
+ 
+ <body style="background:#000033;">
+ 
+<script language="JavaScript" type="text/javascript">
+<!--
+
+
+
+// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
+var hasProductInstall = DetectFlashVer(6, 0, 65);
+
+// Version check based upon the values defined in globals
+var hasRequestedVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
+
+if ( hasProductInstall && !hasRequestedVersion ) {
+	// DO NOT MODIFY THE FOLLOWING FOUR LINES
+	// Location visited after installation is complete if installation is required
+	var MMPlayerType = (isIE == true) ? "ActiveX" : "PlugIn";
+	var MMredirectURL = window.location;
+    document.title = document.title.slice(0, 47) + " - Flash Player Installation";
+    var MMdoctitle = document.title;
+
+	AC_FL_RunContent(
+		"src", "playerProductInstall",
+		"FlashVars", "MMredirectURL="+MMredirectURL+'&MMplayerType='+MMPlayerType+'&MMdoctitle='+MMdoctitle+"",
+		"width", "600",
+		"height", "150",
+		"align", "middle",
+		"id", "FlashyJingle",
+		"quality", "high",
+		"bgcolor", "#869ca7",
+		"name", "FlashyJingle",
+		"allowScriptAccess","sameDomain",
+		"type", "application/x-shockwave-flash",
+		"pluginspage", "http://www.adobe.com/go/getflashplayer"
+	);
+} else if (hasRequestedVersion) {
+	// if we've detected an acceptable version
+	// embed the Flash Content SWF when all tests are passed
+	AC_FL_RunContent(
+			"src", "FlashyJingle",
+			"width", "600",
+			"height", "150",
+			"align", "middle",
+			"id", "FlashyJingle",
+			"quality", "high",
+			"bgcolor", "#869ca7",
+			"name", "FlashyJingle",
+			"allowScriptAccess","sameDomain",
+			"type", "application/x-shockwave-flash",
+			"pluginspage", "http://www.adobe.com/go/getflashplayer"
+	);
+  } else {  // flash is too old or we can't detect the plugin
+    var alternateContent = 'Alternate HTML content should be placed here. '
+  	+ 'This content requires the Adobe Flash Player. '
+   	+ '<a href=http://www.adobe.com/go/getflash/>Get Flash</a>';
+    document.write(alternateContent);  // insert non-flash content
+  }
+
+  
+// -->
+
+</script>
+ 
+<div> 
+<noscript>
+  	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+			id="FlashyJingle" width="600" height="150"
+			codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+			<param name="movie" value="FlashyJingle.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#869ca7" />
+			<param name="allowScriptAccess" value="always" />
+			<embed src="FlashyJingle.swf" quality="high" bgcolor="#869ca7"
+				width="600" height="150" name="FlashyJingle" align="middle"
+				play="true"
+				loop="false"
+				quality="high"
+				allowScriptAccess="always"
+				type="application/x-shockwave-flash"
+				pluginspage="http://www.adobe.com/go/getflashplayer"
+				id="FlashyJingle"
+			/>
+	</object>
+</noscript> 
+ </div>
+ 
+ 
+ </body>
+</html>

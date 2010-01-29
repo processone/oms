@@ -1,0 +1,801 @@
+\documentclass[a4paper,10pt]{book}
+\usepackage{geometry}
+\usepackage[pdftex,colorlinks,linkcolor=black]{hyperref}
+\usepackage{hevea}
+\title{
+\begin{tabular}{c}
+    {\huge {\bf @PACKAGE_NAME@ @PACKAGE_VERSION@ }} \\
+    \\
+    {\huge Installation, Operation and API Guide}
+\end{tabular}
+}
+\author{ProcessOne}
+
+\newcommand{\netconnection}{\texttt{NetConnection}}
+\newcommand{\netstream}{\texttt{NetStream}}
+\newcommand{\oms}{\texttt{OMS}}
+\newcommand{\as}{\texttt{ActionScript3.0}}
+\newcommand{\erlang}{\texttt{Erlang/OTP}}
+
+\newcommand{\makechapter}[2]{ \aname{#1}{} \chapter{\ahrefloc{#1}{#2}} \label{#1} }
+\newcommand{\makesection}[2]{ \aname{#1}{} \section{\ahrefloc{#1}{#2}} \label{#1} }
+\newcommand{\makesubsection}[2]{ \aname{#1}{} \subsection{\ahrefloc{#1}{#2}} \label{#1} }
+\newcommand{\titem}[1]{\item \texttt{#1}: }
+
+\newstyle{.SPAN}{width:20\%; float:right; text-align:left; margin-left:auto;}
+\newstyle{H1.titlemain HR}{display:none;}
+\newstyle{TABLE.title}{border-top:1px solid grey;border-bottom:1px solid grey; background: \#efefef}
+\newstyle{H1.chapter A, H2.section A, H3.subsection A, H4.subsubsection A, H5.paragraph A}
+  {color:\#000000; text-decoration:none;}
+\newstyle{H1.chapter, H2.section, H3.subsection, H4.subsubsection, H5.paragraph}
+  {border-top: 1px solid grey; background: \#efefef; padding: 0.5ex}
+\newstyle{pre.verbatim}{margin:1ex 2ex;border:1px dashed lightgrey;background-color:\#f9f9f9;padding:0.5ex;}
+\newstyle{.dt-description}{margin:0ex 2ex;}
+\newstyle{table[border="1"]}{border-collapse:collapse;margin-bottom:1em;}
+\newstyle{table[border="1"] td}{border:1px solid \#aaa;padding:2px}
+% Don't display <hr> before and after tables or images:
+\newstyle{BLOCKQUOTE.table DIV.center DIV.center HR}{display:none;}
+\newstyle{BLOCKQUOTE.figure DIV.center DIV.center HR}{display:none;}
+
+\begin{document}
+\begin{titlepage}
+\maketitle{}
+\end{titlepage}
+
+\begin{latexonly}
+\setcounter{page}{2}
+\end{latexonly}
+
+\tableofcontents{}
+
+\makechapter{admin guide}{Installation and Operation}
+
+\makesection{intro}{Introduction}
+
+@PACKAGE_NAME@ (\oms{}) is a Flash server written in \erlang{}. Key features:
+\begin{itemize}
+\item Support for streaming live/recorded content
+\item Support for recording live content
+\item Support for \as{} Shared Objects
+\item Clustering support
+\item Ability to write application modules in \erlang{}
+\end{itemize}
+
+\makesection{installation}{Installation}
+\makesubsection{requirements}{Requirements}
+
+To compile \oms{} you need:
+\begin{itemize}
+\item Unix-like operating system
+\item GNU Make
+\item GCC
+\item \erlang{} R11B-0 or higher.
+\end{itemize}
+
+\makesubsection{compile}{Compile and Install}
+
+If you only want to have a look at \oms{} without installing it in your system,
+execute:
+\begin{verbatim}
+$ ./configure
+$ make all
+\end{verbatim}
+
+This will create sample configuration files \texttt{oms.cfg} and \texttt{omsctl.cfg}
+as well as sample administration script \texttt{omsctl} in the current directory.
+To start \oms{} execute:
+\begin{verbatim}
+$ ./omsctl live
+\end{verbatim}
+
+This will start \oms{} in ``live'' mode (i.e. without detaching it from console),
+and loads all example applications. To stop \oms{} just type Ctrl+C.
+
+To install \oms{} in your system, you need to execute:
+\begin{verbatim}
+$ ./configure --prefix=/ --exec_prefix=/usr
+$ make
+$ sudo make install
+\end{verbatim}
+
+This will create and install the following files and directories:
+
+\begin{itemize}
+  \titem{/etc/oms/} Configuration directory:
+  \begin{itemize}
+    \titem{oms.cfg} \oms{} configuration file
+    \titem{omsctl.cfg} \oms{} configuration file of the administration script
+    \titem{apps/} \oms{} application configurations directory
+  \end{itemize}
+  \titem{/path/to/erlang\_root/lib/oms-@PACKAGE_VERSION@/}
+  \begin{itemize}
+    \titem{ebin/} \erlang{} bytecode binary files (*.beam)
+    \titem{ebin/apps/} a directory for storing \oms{} application files (*.beam)
+    \titem{include/} \erlang{} header files (*.hrl)
+    \titem{priv/lib/} dynamic libraries (*.so)
+  \end{itemize}
+  \titem{/usr/lib/oms/} a symlink pointed to
+  \texttt{/path/to/erlang\_root/lib/oms-@PACKAGE_VERSION@/}
+  \titem{/usr/bin/omsctl} administration script
+  \titem{/var/lib/oms/} Mnesia database spool files (*.DCD, *.DCL, *.DAT)
+  \titem{/var/log/oms/} log directory
+  \begin{itemize}
+    \titem{oms.log} \oms{} log
+    \titem{erlang.log} \erlang{} system log
+  \end{itemize}
+\end{itemize}
+
+Before starting \oms{} you need:
+\begin{itemize}
+\item create a user account (likely \texttt{oms});
+\item check if this user has a read/write access to \texttt{/var/log/oms/}
+and \texttt{/var/lib/oms/} directories;
+\item edit configuration file \texttt{oms.cfg} as described in the following
+sections.
+\end{itemize}
+
+Now start \oms{} in background:
+\begin{verbatim}
+$ /usr/bin/omsctl start
+\end{verbatim}
+
+To stop \oms{} use the following command:
+\begin{verbatim}
+$ /usr/bin/omsctl stop
+\end{verbatim}
+
+\makesection{configuration}{Configuring \oms{}}
+\makesubsection{basic configuration}{Basic Configuration}
+
+\texttt{oms.cfg} is a basic configuration file. The file has INI-syntax.
+Currently there are only two sections: \verb'[main]' and \verb'[listen]'.
+
+Available options in section \verb'[main]':
+\begin{itemize}
+  \titem{loglevel} This option modifies the verbosity of the file oms.log.
+  The available levels are:
+  \begin{description}
+    \titem{0} No logging at all (not recommended)
+    \titem{1} Critical
+    \titem{2} Error
+    \titem{3} Warning
+    \titem{4} Info
+    \titem{5} Debug
+  \end{description}
+  Default is 4 (Info).
+  \titem{app\_conf\_dir} a directory for storing application configuration files,
+  \texttt{/etc/oms/apps/} for typical installation.
+  \titem{app\_beam\_dir} a directory for storing application binary files,
+  \texttt{/usr/lib/oms/ebin/apps/} for typical installation.
+\end{itemize}
+
+Available options in section \verb'[listen]':
+\begin{itemize}
+  \titem{type} a client connection type. Currently only \texttt{rtmp} type is
+  supported. The default is \texttt{rtmp}.
+  \titem{address} an IP address to listen for incoming connections. The default
+  is \texttt{0.0.0.0}
+  \titem{port} an IP port to listen for incoming connections. The default is
+  \texttt{1935}
+\end{itemize}
+
+Example configuration file:
+\begin{verbatim}
+[main]
+loglevel = 4
+app_conf_dir = /etc/oms/apps
+app_beam_dir = /usr/lib/oms/ebin/apps
+
+[listen]
+type = rtmp
+address = 0.0.0.0
+port = 1935
+\end{verbatim}
+
+\makesubsection{admin script config}{Administration Script Configuration}
+
+\texttt{omsctl.cfg} is a configuration file used by administration script
+\texttt{omsctl}. This file contains shell variables. All variables are
+mandatory. The available variables are:
+\begin{itemize}
+\titem{NODE} is an \erlang{} node name, likely \texttt{oms}
+\titem{HOST} is an FQDN of your host, likely `hostname -f`
+\titem{POLL} is a boolean flag defining whether to use kernel poll or not.
+Available values are \texttt{true} or \texttt{false}
+\titem{ERL} is a full path to \erlang{} emulator (e.g. \texttt{/usr/bin/erl})
+\titem{BEAMDIR} is full path to \oms{} \erlang{} bytecode files (*.beam)
+(e.g. \texttt{/usr/lib/oms/ebin})
+\titem{CONFIG} is a full path to basic configuration file (e.g. \texttt{/etc/oms/oms.cfg})
+\titem{LOG} is a full path to \oms{} log file (e.g. \texttt{/var/log/oms/oms.log})
+\titem{ERLANG\_LOG} is a full path to \erlang{} system log file
+(e.g. \texttt{/var/log/oms/erlang.log})
+\titem{MNESIADIR} is a full path to Mnesia spool files directory
+(e.g. \texttt{/var/lib/oms/db/\$NODE})
+\end{itemize}
+
+Example configuration:
+\begin{verbatim}
+NODE=oms
+HOST=`hostname -f`
+POLL=true
+ERL=/usr/bin/erl
+BEAMDIR=/usr/lib/oms/ebin
+CONFIG=/etc/oms/oms.cfg
+LOG=/var/log/oms/oms.log
+ERLANG_LOG=/var/log/oms/erlang.log
+MNESIADIR=/var/lib/oms/db/$NODE
+\end{verbatim}
+
+\makechapter{api guide}{API}
+
+\makesection{intro.api}{Introduction}
+This chapter describes API for \oms{} applications.
+Every \oms{} application consists of \netconnection{} and
+\netstream{} modules. These modules should implement handlers as
+described in this guide. The modules should be configured in
+the application configuration file.
+
+\makesection{configfile}{Configuration File}
+When \oms{} loads an application it reads its configuration from
+the corresponding file. Application configuration files have simple
+INI syntax. The only mandatory section is \verb'[main]'
+where you should define application name, module names, etc.
+
+Available options in section \verb'[main]':
+\begin{itemize}
+\item \texttt{name}. An application name. A \netconnection{} with
+URI \verb'scheme://server/name' gets connected to this application.
+This option is mandatory.
+\item \texttt{netconnection\_module}. A name of \netconnection{} module.
+Default is \texttt{undefined}.
+\item \texttt{netstream\_module}. A name of \netstream{} module.
+Default is \texttt{undefined}.
+\item \texttt{beam\_dir}. A directory with compiled modules.
+By default OMS loads modules from its own preconfigured directory.
+\end{itemize}
+
+Also you are able to define application specific options in section
+\verb'[options]'. This section will be converted in a property list
+\verb'[{key, "value"}]' and passed in \verb'#call_ctx.option'
+record field. The example configuration of \texttt{myapp.cfg}:
+\begin{verbatim}
+[main]
+name = myapp
+netconnection_module = myapp_netconnection
+beam_dir = /var/lib/oms/modules
+
+[options]
+# application specific options
+video_dir = /var/www/video
+audio_dir = /var/www/audio
+\end{verbatim}
+
+\makesection{types}{Types and Definitions}
+\makesubsection{amf}{AMF Data Structure}
+\begin{verbatim}
+amf() = number() | binary() | amf_object() |
+        ecma_array() | date() | null | undefined |
+        array() | unsupported | movie_clip |
+        true | false
+number() = integer() | float()
+amf_object() = {object, [{binary(), amf()}]}
+ecma_array() = {ecma_array, [{binary(), amf()}]}
+array() = {array, [amf()]}
+date() = {date, number()}
+\end{verbatim}
+
+\makesubsection{rtmp}{RTMP Message}
+
+The following records are defined in \verb'"rtmp.hrl"' file.
+
+\begin{verbatim}
+#rtmp_msg{type = positive_integer(),
+          stream = positive_integer(),
+          timestamp = positive_integer(),
+          chunk_stream = non_neg_integer() > 1,
+          data = #amf_cmd{} | tuple() | binary()}
+\end{verbatim}
+
+Where \verb'type' is a type of RTMP message; \verb'stream' is a
+message stream ID; \verb'timestamp' is an unsigned 32-bit integer;
+\verb'chunk_stream' is a chunk stream ID; data is an AMF command,
+tuple or binary depending on the \verb'type'.
+
+\begin{verbatim}
+#amf_cmd{name = binary() | error | result | status,
+         trid = number(),
+         body = [amf()]}
+\end{verbatim}
+
+Where \verb'name' is a name of AMF command; \verb'trid' is a transaction
+ID of AMF command; \verb'body' is a list of \verb'amf()' structures.
+
+\makesubsection{callctx}{Call Context and ``RTMP Socket''}
+
+Call context is passed in almost all handlers. It's defined
+in \verb'"oms.hrl"' file.
+
+\begin{verbatim}
+#call_ctx{rtmp_sock = rtmp_socket()
+          session = pid(),
+          app_name = string(),
+          options = [{atom(), string()}],
+          addr = {ip_addr(), port()},
+          stream = positive_integer()}
+ip_addr() = ipv4_addr() | ipv6_addr()
+port() = positive_integer()
+rtmp_socket() = pid()
+\end{verbatim}
+
+Where:
+\begin{itemize}
+\item \texttt{rtmp\_sock} is an ``RTMP socket''. Note: it is not a regular TCP socket,
+but a high-level process managing RTMP chunk streams.
+\item \texttt{session} is a process holding the session;
+\item \texttt{app\_name} is the application name;
+\item \texttt{options} is the application options;
+\item \texttt{addr} is a client transport address;
+\item \texttt{stream} is a message stream ID.
+\end{itemize}
+
+\makesubsection{macros}{NetConnection and NetStream codes}
+
+Sometimes it is needed to use \netconnection{} or \netstream{} information
+codes. There are several macros defined for this purpose
+in \verb'"oms.hrl"' header file. For example, you can use these macros in \netconnection{}
+callbacks or in \verb'oms_api:stream_info/3,4' functions.
+
+\netconnection{} information codes:
+\begin{itemize}
+\item \verb'NC_CALL_FAILED' is \texttt{"NetConnection.Call.Failed"};
+\item \verb'NC_CONNECT_APP_SHUTDOWN' is \texttt{"NetConnection.Connect.AppShutdown"};
+\item \verb'NC_CONNECT_CLOSED' is \texttt{"NetConnection.Connect.Closed"};
+\item \verb'NC_CONNECT_FAILED' is \texttt{"NetConnection.Connect.Failed"};
+\item \verb'NC_CONNECT_REJECTED' is \texttt{"NetConnection.Connect.Rejected"};
+\item \verb'NC_CONNECT_SUCCESS' is \texttt{"NetConnection.Connect.Success"}.
+\end{itemize}
+
+\netstream{} information codes:
+\begin{itemize}
+\item \verb'NS_BUFFER_EMPTY' is \texttt{"NetStream.Buffer.Empty"};
+\item \verb'NS_BUFFER_FULL' is \texttt{"NetStream.Buffer.Full"};
+\item \verb'NS_FAILED' is \texttt{"NetStream.Failed"};
+\item \verb'NS_PAUSE_NOTIFY' is \texttt{"NetStream.Pause.Notify"};
+\item \verb'NS_PLAY_COMPLETE' is \texttt{"NetStream.Play.Complete"};
+\item \verb'NS_PLAY_FAILED' is \texttt{"NetStream.Play.Failed"};
+\item \verb'NS_PLAY_INSUFFICIENT_BW' is \texttt{"NetSream.Play.InsufficientBW"};
+\item \verb'NS_PLAY_PUBLISH_NOTIFY' is \texttt{"NetStream.Play.PublishNotify"};
+\item \verb'NS_PLAY_RESET' is \texttt{"NetStream.Play.Reset"};
+\item \verb'NS_PLAY_START' is \texttt{"NetStream.Play.Start"};
+\item \verb'NS_PLAY_STOP' is \texttt{"NetStream.Play.Stop"};
+\item \verb'NS_PLAY_STREAM_NOT_FOUND' is \texttt{"NetStream.Play.StreamNotFound"};
+\item \verb'NS_PLAY_SWITCH' is \texttt{"NetStream.Play.Switch"};
+\item \verb'NS_PLAY_UNPUBLISH_NOTIFY' is \texttt{"NetStream.Play.UnpublishNotify"};
+\item \verb'NS_PUBLISH_BAD_NAME' is \texttt{"NetStream.Publish.BadName"};
+\item \verb'NS_PUBLISH_IDLE' is \texttt{"NetStream.Publish.Idle"};
+\item \verb'NS_PUBLISH_START' is \texttt{"NetStream.Publish.Start"};
+\item \verb'NS_RECORD_FAILED' is \texttt{"NetStream.Record.Failed"};
+\item \verb'NS_RECORD_NO_ACCESS' is \texttt{"NetStream.Record.NoAccess"};
+\item \verb'NS_RECORD_START' is \texttt{"NetStream.Record.Start"};
+\item \verb'NS_RECORD_STOP' is \texttt{"NetStream.Record.Stop"};
+\item \verb'NS_SEEK_FAILED' is \texttt{"NetStream.Seek.Failed"};
+\item \verb'NS_SEEK_NOTIFY' is \texttt{"NetStream.Seek.Notify"};
+\item \verb'NS_UNPAUSE_NOTIFY' is \texttt{"NetStream.Unpause.Notify"};
+\item \verb'NS_UNPUBLISH_SUCCESS' is \texttt{"NetStream.Unpublish.Success"}.
+\end{itemize}
+
+\makesection{nchandler}{NetConnection handlers}
+
+You are able to redefine default \oms{} behaviour via \netconnection{} handlers.
+If the handler is undefined, the default value is applied by \oms{}. Some of
+the handlers support \verb'error_info()' as return value. It is defined as
+\begin{verbatim}
+error_info() = {error, Code, Args}
+Code = string()
+Args = [{string(), amf()}]
+\end{verbatim}
+
+For example, in the case of
+\begin{verbatim}
+{error, ?NC_CONNECT_REJECTED,
+  [{"description", "authentication failed"}]}
+\end{verbatim}
+
+\oms{} sends the following \verb'onStatus' event back to the client:
+\begin{verbatim}
+[{"code", "NetConnection.Connect.Rejected"},
+ {"level", "error"},
+ {"description", "authentication failed"}]
+\end{verbatim}
+
+\makesubsection{load1}{load/1}
+\begin{verbatim}
+NetConnection:load(Opts) -> Ignore
+        Opts = [{atom(), string()}]
+        Ignore = term()
+\end{verbatim}
+
+When \oms{} loads the application, this function is called if defined.
+\texttt{Opts} are application options defined in the section \texttt{[options]}
+of the corresponding application configuration file. The return value
+is ignored.
+
+\makesubsection{connectN}{connect/N}
+\begin{verbatim}
+NetConnection:connect(Ctx, Arg1, ..., ArgN) -> Result
+        Ctx = #call_ctx{}
+        Arg1 = ... = ArgN = amf()
+        Result = ok | error | ErrorInfo
+        ErrorInfo = error_info()
+\end{verbatim}
+
+Default: \verb'ok'
+
+This function is called everytime a new client connection is established.
+The number of arguments depends on \as{} \texttt{connect()} function.
+You can decline a connection with \verb'ErrorInfo'; \verb'error' is a 
+shorthand for \verb'{error, ?NC_CONNECT_REJECTED, []}'.
+
+\makesubsection{close1}{close/1}
+\begin{verbatim}
+NetConnection:close(Ctx) -> Ignore
+        Ctx = #call_ctx{}
+        Ignore = term()
+\end{verbatim}
+
+This function is called everytime a connection is closed.
+The return value is ignored.
+
+\makesubsection{play2}{play/2}
+\begin{verbatim}
+NetConnection:play(Ctx, Name) -> Result
+        Ctx = #call_ctx{}
+        Name = string()
+        Result = {play, StreamName} |
+                 {play_file, FileName} |
+                 {stream, StreamRef} |
+                 error | ErrorInfo
+        StreamName = FileName = string()
+        StreamRef = term()
+        ErrorInfo = error_info()
+\end{verbatim}
+
+Default: \verb'{play, Name}'
+
+This function is called when a client calls \as{} \texttt{play()} function.
+\texttt{Name} is a name of a stream or a file to play.
+\begin{itemize}
+\item if \verb'{play, StreamName}' is returned, \oms{} will route all
+incoming packets from published stream \verb'StreamName' to all subscribed players;
+\item if \verb'{play_file, FileName}' is returned, \oms{} starts playing FLV file
+\verb'FileName';
+\item if \verb'{stream, StreamRef}' is returned, you should handle the stream
+via your own \netstream{} module. \texttt{StreamRef} is an opaque \erlang{}
+term (likely a \texttt{pid()}) which will be passed to \netstream{} handlers.
+Note: your \netstream{} module should not play any data until
+\verb'NetStream:play/2' handler is called;
+\item if \verb'ErrorInfo' is returned, the request is declined;
+\item \verb'error' is a shorthand for \verb'{error, ?NS_PLAY_STREAM_NOT_FOUND, []}'.
+\end{itemize}
+
+\makesubsection{publish3}{publish/3}
+\begin{verbatim}
+NetConnection:publish(Ctx, Name, Type) -> Result
+        Ctx = #call_ctx{}
+        Name = Type = string()
+        Result = {publish, StreamName} |
+                 {publish, StreamName, FileName} |
+                 {stream, StreamRef} |
+                 error | ErrorInfo
+        StreamName = FileName = string()
+        StreamRef = term()
+        ErrorInfo = error_info()
+\end{verbatim}
+
+Default: \verb'{publish, Name}'
+
+This function is called when a client calls \as{} \texttt{publish()} function.
+\begin{itemize}
+\item if \verb'{publish, StreamName}' is returned, \oms{} will route all
+incoming packets from published stream \verb'StreamName' to all subscribed players;
+\item \verb'{publish, StreamName, FileName}' is almost the same as
+\verb'{publish, StreamName}' except that \oms{} also records the published stream
+in file \verb'FileName';
+\item if \verb'{stream, StreamRef}' is returned, you should handle the stream
+via your own \netstream{} module. \texttt{StreamRef} is an opaque \erlang{}
+term (likely a \texttt{pid()}) which will be passed to \netstream{} handlers;
+\item if \verb'ErrorInfo' is returned, the request is declined;
+\item \verb'error' is a shorthand for \verb'{error, ?NS_PUBLISH_BAD_NAME, []}'.
+\end{itemize}
+
+\makesubsection{streamstarted3}{stream\_started/3}
+\begin{verbatim}
+NetConnection:stream_started(Ctx, StreamRef, Type) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Type = play | publish
+\end{verbatim}
+
+If defined, this function is called if \netstream{} \verb'StreamRef'
+is started successfully. The return value is ignored.
+
+\makesubsection{streamstopped3}{stream\_stopped/3}
+\begin{verbatim}
+NetConnection:stream_stopped(Ctx, StreamRef, Type) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Type = play | publish
+\end{verbatim}
+
+If defined, this function is called if \netstream{} \verb'StreamRef'
+is stopped. The return value is ignored.
+
+\makesubsection{functionN}{'function'/N}
+\begin{verbatim}
+NetConnection:'function'(Ctx, Arg1, ..., ArgN) -> Result
+        Ctx = #call_ctx{}
+        Arg1 = ... = ArgN = amf()
+        Res = {result, amf()} |
+              {error, amf()} |
+              {status, amf()} |
+              pass
+\end{verbatim}
+
+Every \as{} \texttt{call("function", resp, arg1, ..., argN)} is handled
+by this function. If \texttt{pass} is returned, no response is sent. This
+handler has no default value: a connection crashes if a client calls
+undefined function.
+
+\makesection{nshandlers}{NetStream handlers}
+
+You can redefine default \oms{} behaviour via \netstream{} handlers.
+To do that you have to return \verb'{stream, StreamRef}' in
+\verb'NetConnection:play/2' or \verb'NetConnection:publish/3' function.
+\verb'StreamRef' will be passed to every \netstream{} handlers.
+\netstream{} handlers do not have default values, so a connection
+crashes if a client calls undefined handler.
+
+\makesubsection{nsplay2}{play/2}
+\begin{verbatim}
+NetStream:play(Ctx, StreamRef) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+\end{verbatim}
+
+This function is called immediately if \verb'NetConnection:play/2'
+returns \verb'{stream, StreamRef}'.
+
+This handler indicates the stream activation or
+new subscriber addition, depending on the stream type.
+The return value is ignored.
+
+\makesubsection{nsseek3}{seek/3}
+\begin{verbatim}
+NetStream:seek(Ctx, StreamRef, Offset) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Offset = number()
+\end{verbatim}
+
+This function is called when a client calls \as{} \texttt{seek()} function
+on stream \texttt{StreamRef}. The return value is ignored.
+
+\makesubsection{nspause4}{pause/4}
+\begin{verbatim}
+NetStream:pause(Ctx, StreamRef, Flag, Offset) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Flag = true | false
+        Offset = number()
+\end{verbatim}
+
+This function is called when a client calls \as{} \texttt{pause()} function
+on stream \texttt{StreamRef}. The return value is ignored.
+
+\makesubsection{receiveAudio3}{receiveAudio/3}
+\begin{verbatim}
+NetStream:receiveAudio(Ctx, StreamRef, Flag) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Flag = true | false
+\end{verbatim}
+
+This function is called when a client calls \as{} \texttt{receiveAudio()} function
+on stream \texttt{StreamRef}. The return value is ignored.
+
+\makesubsection{receiveVideo3}{receiveVideo/3}
+\begin{verbatim}
+NetStream:receiveVideo(Ctx, StreamRef, Flag) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        Flag = true | false
+\end{verbatim}
+
+This function is called when a client calls \as{} \texttt{receiveVideo()} function
+on stream \texttt{StreamRef}. The return value is ignored.
+
+\makesubsection{bufferTime3}{bufferTime/3}
+\begin{verbatim}
+NetStream:bufferTime(Ctx, StreamRef, MilliSecs) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        MilliSecs = positive_integer()
+\end{verbatim}
+
+This function is called if a client sets \as{} \texttt{bufferTime} property
+on stream \texttt{StreamRef}. The return value is ignored.
+
+\makesubsection{nsclose2}{close/2}
+\begin{verbatim}
+NetStream:close(Ctx, StreamRef) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+\end{verbatim}
+
+This function is called when a client calls \as{} \texttt{close()} function
+on stream \texttt{StreamRef} or when the corresponding \netconnection{} is closed.
+The return value is ignored.
+
+\makesubsection{route3}{route/3}
+\begin{verbatim}
+NetStream:route(Ctx, StreamRef, RTMP) -> Ignore
+        Ctx = #call_ctx{}
+        StreamRef = Ignore = term()
+        RTMP = #rtmp_msg{}
+\end{verbatim}
+
+This function is called everytime an \verb'RTMP' audio/video/data message is
+received for stream \verb'StreamRef'. The return value is ignored.
+
+\makesection{omsapi}{\oms{} API}
+
+\oms{} exports several useful functions in \texttt{oms\_api} module.
+These functions are mostly needed for \netstream{} handlers.
+
+\makesubsection{send2}{send/2}
+\begin{verbatim}
+send(RTMPSock, RTMP) -> ok
+        RTMPSock = rtmp_socket()
+        RTMP = #rtmp_msg{}
+\end{verbatim}
+
+Performs asynchronous send of \verb'RTMP' message on ``RTMP socket''.
+
+\makesubsection{syncsend2}{sync\_send/2}
+\begin{verbatim}
+sync_send(RTMPSock, RTMP) -> ok | {error, Reason}
+        RTMPSock = rtmp_socket()
+        RTMP = #rtmp_msg{}
+        Reason = atom()
+\end{verbatim}
+
+Performs synchronous send of \verb'RTMP' message on ``RTMP socket''.
+Unlike \verb'send/2', this function waits until \verb'RTMPSock' writes
+a data in a socket.
+
+\makesubsection{alloccsid1}{alloc\_csid/1}
+\begin{verbatim}
+alloc_csid(RTMPSock) -> {ok, CSID} | {error, Reason}
+        RTMPSock = rtmp_socket()
+        CSID = non_neg_integer() > 1
+        Reason = atom()
+\end{verbatim}
+
+Allocates next free chunk stream id on ``RTMP socket''.
+
+\makesubsection{apiclose1}{close/1}
+\begin{verbatim}
+close(RTMPSock) -> ok
+        RTMPSock = rtmp_socket()
+\end{verbatim}
+
+Closes ``RTMP socket''. Note: closing an ``RTMP socket'' triggers
+\verb'NetConnection:close/1' and \verb'NetStream:close/2' handlers
+execution.
+
+\makesubsection{getopts2}{getopts/2}
+\begin{verbatim}
+getopts(RTMPSock, OptNames) -> {ok, Opts} | {error, Reason}
+        RTMPSock = rtmp_socket()
+        OptNames = [OptName]
+        Opts = [{OptName, Value}]
+        OptName = chunk_size |
+                  window_size |
+                  peer_chunk_size |
+                  peer_window_size
+        Value = non_neg_integer()
+        Reason = atom()
+\end{verbatim}
+
+Returns options of ``RTMP socket''.
+
+\makesubsection{setopts2}{setopts/2}
+\begin{verbatim}
+setopts(RTMPSock, Opts) -> ok
+        RTMPSock = rtmp_socket()
+        Opts = [{OptName, Value}]
+        OptName = chunk_size |
+                  window_size |
+                  peer_window_size
+        Value = non_neg_integer()
+\end{verbatim}
+
+Sets options on ``RTMP socket''.
+
+\makesubsection{registerstream3}{register\_stream/3}
+\begin{verbatim}
+register_stream(AppName, Name, StreamRef) -> ok | {error, Reason}
+        AppName = string()
+        Name = string()
+        StreamRef = term()
+        Reason = atom()
+\end{verbatim}
+
+Registers stream \verb'StreamRef' with \verb'Name' for application \verb'AppName'
+on all nodes.
+
+\makesubsection{unregisterstream2}{unregister\_stream/2}
+\begin{verbatim}
+unregister_stream(AppName, Name) -> ok | {error, Reason}
+        AppName = string()
+        Name = string()
+        Reason = atom()
+\end{verbatim}
+
+Unregisters stream \verb'Name' for application \verb'AppName' on all nodes.
+
+\makesubsection{allstreams1}{all\_streams/1}
+\begin{verbatim}
+all_streams(AppName) -> [{Name, StreamRef}]
+        AppName = string()
+        Name = string()
+        StreamRef = term()
+\end{verbatim}
+
+Returns all registered streams for application \verb'AppName' from all nodes.
+
+\makesubsection{allsessions1}{all\_sessions/1}
+\begin{verbatim}
+all_sessions(AppName) -> [{Session, Addr}]
+        AppName = string()
+        Session = pid()
+        Addr = {ip_addr(), port()}
+\end{verbatim}
+
+Returns all active sessions for application \verb'AppName' from all nodes.
+
+\makesubsection{call3}{call/3}
+\begin{verbatim}
+call(Session, Function, Args) -> ok
+        Session = pid()
+        Function = atom()
+        Args = [amf()]
+\end{verbatim}
+
+Calls \verb'Function(Arg1, ..., ArgN)' on client side, where
+\texttt{Args = [Arg1, ..., ArgN]}. \texttt{Session} is a part of
+call context, i.e. \verb'#call_ctx.session'.
+
+\makesubsection{streaminfo3}{stream\_info/3}
+\begin{verbatim}
+stream_info(Session, Stream, Code) -> ok
+        Session = pid()
+        Stream = non_neg_integer()
+        Code = string()
+\end{verbatim}
+
+This is the same as \texttt{stream\_info(Session, Stream, Code, [])}.
+
+\makesubsection{streaminfo4}{stream\_info/4}
+\begin{verbatim}
+stream_info(Session, Stream, Code, Opts) -> ok
+        Session = pid()
+        Stream = non_neg_integer()
+        Code = string()
+        Opts = [{string(), amf()}]
+\end{verbatim}
+
+Sends \verb'onStatus' event in session \verb'Session' for stream \verb'Stream'
+with information code \verb'Code' and information options \verb'Opts'.
+
+\end{document}

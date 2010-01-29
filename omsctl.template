@@ -1,0 +1,67 @@
+#!/bin/sh
+
+CTLCFG=@oms_config_dir@/omsctl.cfg
+
+[ -f $CTLCFG ] && . $CTLCFG || exit 1
+[ -d $MNESIADIR ] || mkdir -p $MNESIADIR
+
+start()
+{
+    $ERL \
+	-noinput -detached \
+	+K $POLL \
+	-name $NODE@$HOST \
+	-pa $BEAMDIR \
+	-mnesia dir \"$MNESIADIR\" \
+	-s oms \
+	-oms config \"$CONFIG\" log_path \"$LOG\" \
+	-sasl sasl_error_logger \{file,\"$ERLANG_LOG\"\} \
+	$ARGS "$@"
+}
+
+stop()
+{
+    $ERL \
+	-name debug-$NODE@$HOST \
+	-remsh $NODE@$HOST \
+	-hidden -noshell \
+	-eval "rpc:call('$NODE@$HOST', init, stop, []), c:q()."
+}
+
+live()
+{
+    $ERL \
+	-name $NODE@$HOST \
+	+K $POLL \
+	-pa $BEAMDIR \
+	-mnesia dir \"$MNESIADIR\" \
+	-s oms +B \
+	-oms config \"$CONFIG\" log_path \"$LOG\" \
+	-sasl sasl_error_logger \{file,\"$ERLANG_LOG\"\} \
+	$ARGS "$@"
+}
+
+debug()
+{
+    $ERL \
+	-name debug-$NODE@$HOST \
+	-remsh $NODE@$HOST \
+	-hidden +B \
+	$ARGS "$@"
+}
+
+usage()
+{
+    echo "usage: omsctl start | stop | live | debug"
+    exit
+}
+
+[ $# -lt 1 ] && usage
+
+case $1 in
+    start) start;;
+    stop) stop;;
+    live) live;;
+    debug) debug;;
+    *) usage;;
+esac

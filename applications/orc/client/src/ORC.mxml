@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" currentState="Loginscreen">
+	
+<mx:Script>
+        <![CDATA[
+        	import mx.controls.CheckBox;
+        	import mx.controls.Image;
+        	import mx.controls.TextArea;
+        	import mx.containers.Canvas;
+        	import mx.controls.Label;
+             import flash.net.Responder;
+ 
+        
+    		import mx.core.UIComponent; 
+    		import mx.containers.VBox;
+ 			import mx.controls.TextInput;
+ 			import mx.controls.Button;
+ 			import mx.controls.ComboBox;
+ 			import flash.events.Event;
+ 	
+       public var myconn:NetConnection;
+       public var resp:Responder;
+       
+       
+       
+       
+       		public function onNCStatus(event:NetStatusEvent):void 
+					{
+   					//debugt.text += "\nconnection event"
+   					if(event.info.code == "NetConnection.Connect.Success") 
+   						{
+						currentState = "Logged";
+   						}
+   						else
+   						{
+   						//Erreur login
+   						}
+					}
+		
+				public function buconnectclicked():void
+					{
+            		debugt.text = "Connecting:";
+                        NetConnection.defaultObjectEncoding = ObjectEncoding.AMF0;
+        	   		myconn = new NetConnection();
+            		myconn.addEventListener("netStatus", onNCStatus);	
+            		var client:Object = myconn.client;
+					//var simpleRemoteCalls:SimpleRemoteCalls = this;
+
+					myconn.client = this;
+					myconn.connect(urlserver.text,nick.text);	
+					}
+        
+         private function glamresult(result:String):void
+				{
+				
+				}
+				
+			private function glamerror(error:Object):void
+				{
+			
+				
+				}	
+        		
+        		public function post():void
+        			{
+        			resp = new Responder(glamresult,glamerror);	
+            		myconn.call("post",resp,nick.text,saisie.text);
+        			}
+        
+        		public function newline(s:String):void
+        			{
+        			chatsc.text += s;	
+        				
+        			}
+        			
+        			
+        		public function updatelist(a:Array):void
+        			{
+        			memlist.dataProvider = a;	
+        				
+        			}
+          ]]>
+</mx:Script> 	
+	
+	
+	
+	
+	
+	
+	<mx:states>
+		<mx:State name="Loginscreen">
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Label x="10" y="114" text="RTMP server"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Label x="10" y="192" text="Nick"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextInput x="10" y="140" id="urlserver" text="rtmp://localhost/orc"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextInput x="10" y="218" id="nick"/>
+			</mx:AddChild>
+			<mx:SetProperty target="{panel1}" name="width" value="426"/>
+			<mx:SetProperty target="{panel1}" name="height" value="331"/>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Button x="228" y="140" label="Connect" width="146" height="100" id="buconnect"  click="buconnectclicked()"/>
+			</mx:AddChild>
+			<mx:RemoveChild target="{debugt}"/>
+			<mx:SetProperty target="{image1}" name="source" value="process-one_logo.png"/>
+		</mx:State>
+		<mx:State name="Logged">
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:List x="10" y="111" width="159" height="211" id="memlist"></mx:List>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextArea x="203" y="113" width="327" height="209" id="chatsc"/>
+			</mx:AddChild>
+			<mx:SetProperty target="{image1}" name="width" value="329"/>
+			<mx:SetProperty target="{image1}" name="height" value="69"/>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextInput x="10" y="330" width="490" editable="true" id="saisie"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Button x="508" y="330" label="Button" width="22" id="busaisie" click="post()"/>
+			</mx:AddChild>
+			<mx:SetProperty target="{image1}" name="source" value="./process-one_logo.png"/>
+			<mx:RemoveChild target="{debugt}"/>
+		</mx:State>
+	</mx:states>
+	<mx:Panel x="10" y="10" width="576" height="423" layout="absolute" id="panel1">
+		<mx:Image x="10" y="10" width="229" height="60" id="image1"/>
+	</mx:Panel>
+	<mx:TextArea x="10" y="583" width="576" id="debugt"/>
+	
+</mx:Application>

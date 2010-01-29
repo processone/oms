@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application backgroundColor="0xffffff" xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" initialize="init()" currentState="login">
+	<mx:states>
+		<mx:State name="login">
+			<mx:SetStyle target="{bled}" name="fillColors" value="[#CCD201, #B7D201]"/>
+		</mx:State>
+		<mx:State name="playing"/>
+	</mx:states>
+	
+	<mx:Script>
+        <![CDATA[
+        	import mx.containers.Canvas;
+        	import mx.events.ListEvent;
+        	import mx.containers.Grid;
+        	import mx.controls.Label;
+            import flash.net.NetConnection;
+            import flash.net.NetStream;
+            import flash.net.ObjectEncoding;
+            import flash.net.Responder;
+            import flash.media.Camera;
+            import flash.media.SoundCodec;
+            import flash.events.DataEvent;
+            import mx.core.UIComponent; 
+            import mx.controls.Button;
+         import mx.utils.ObjectUtil;
+         
+         
+        
+            public var myconn:NetConnection;
+            public var ns1:NetStream;	
+            public var camera:Camera;
+            public var micro:Microphone;
+            public var video:Video; 
+            public var videoHolder:UIComponent;
+            public var burec:Button;
+            public var bustop:Button;
+            public var client:Object;
+            public var canlog:Canvas;
+            public var logturl:TextArea;
+            public var logtpass:TextArea;
+            public var seektimer:Timer; 
+            
+            
+            
+            public function final_init():void
+            	{
+            		recordp.addChild(burec);
+            		bustop.visible = false;
+            		recordp.addChild(bustop);
+            		
+            	}
+            
+            public function buconnect():void
+            	{
+                        NetConnection.defaultObjectEncoding = ObjectEncoding.AMF0;
+            	 	myconn = new NetConnection();
+            	        myconn.addEventListener("netStatus", onNCStatus);
+			myconn.connect(serverurl.text);
+            	}
+  
+            
+            public function pause():void
+            	{
+				if (bpause.label == "Pause")
+					{ 
+            		ns1.pause();
+            		bpause.label = "Resume";
+     				}
+            		else
+            		{
+            		ns1.resume();
+            		bpause.label = "Pause";		
+            		}
+            	}	
+            	
+            	
+            	
+            	
+            public function init():void
+            	{
+            	init_cam();
+            	init_mic();
+            	
+            	bustop = new Button();
+				bustop.label = "Stop recording";
+				bustop.id = "bstop";
+				bustop.addEventListener(MouseEvent.CLICK,bustopclicked);
+								
+				burec = new Button();
+        		burec.label = "Start recording";
+        		burec.id = "brec";
+        		burec.addEventListener(MouseEvent.CLICK,startrecording);
+				
+				
+				
+           
+            	 video = new Video();
+            	videoHolder = new UIComponent();	
+            	videoHolder.visible = true;
+            	videoHolder.x = 320;
+            	videoHolder.y = 50;	
+            	videoHolder.width = 280;
+            	videoHolder.height = 260;	
+				addChild(videoHolder);
+				pan.addChild(videoHolder);
+				
+            	}
+            
+            public function init_cam():void
+            	{
+            		camera = Camera.getCamera();
+            			if (camera == null)
+            				{
+            				log.text += "Camera not found";
+            				var dob:DisplayObject;
+            				dob = tnav.getChildByName("recordp");
+            				tnav.removeChild(dob);
+            				}
+            				else
+            				log.text += "Camera have been found";
+            	}
+            	
+           public function init_mic():void
+           		{
+           			micro = Microphone.getMicrophone();
+                                //micro.codec = SoundCodec.SPEEX;
+                                micro.setSilenceLevel(0);
+           			if (micro == null)
+           				{
+           				log.text += "\n" + "Microphone not found";
+           				}
+           				log.text += "\n" + "Microphone have been found";
+           		}
+           		
+         
+         
+         public function onSeek():void
+				{
+				log.text += "\n" + "Seek status received";
+				}
+	
+           
+        
+        
+        
+            public function select_rec():void
+            	{
+            		var date:Date = new Date();
+            		var sec:Number = date.getSeconds();
+            		var min:Number = date.getMinutes();
+            		var hours:Number = date.getHours();
+            	
+            		//ns1.close();
+            		
+            		medrecname.text = "Media-" + hours.toString() + "-" + min.toString() +
+            		"-" + sec.toString();
+
+            		
+            		video.height = 260;
+					video.width = 280;
+				 
+           			video.attachCamera(camera);				
+					videoHolder.addChild(video);
+
+            	}
+            	
+            public function select_play():void
+            	{	
+            	
+            	}	
+            	
+            public function get_list_of_av_medias():void
+            	{
+            	var resp:Responder;
+            	resp = new Responder(glamresult,glamerror);	
+            	myconn.call("getlistofavmedia",resp);
+            		
+            	
+            	}
+            	
+            private function glamresult(result:Array):void
+				{
+				var length:int = result.length;
+				var newtab:Array;
+				newtab = new Array();
+				for (var i:int=0;i<length;i++)
+					{
+					var temp:String;
+					temp = result[i];
+					var ta:Array;
+					ta = temp.split("/");
+					var med:String = ta[ta.length - 1];
+					newtab[i] = {Name:med};
+					}
+
+   				medlist.dataProvider = newtab;
+				}
+		
+			private function onMetaData(data:Object):void 
+				{
+				log.text += "\nMetadata received\n";
+				for (var propName:String in data) {
+        			log.text += propName + " = " + data[propName];
+        		
+        		seekslider.maximum = data["duration"];	
+        	
+        		videoHolder.width = data["width"];
+        		videoHolder.height = data["height"];
+        		video.width = data["width"];
+        		video.height = data["height"];
+        		seektimer = new Timer(500,0);
+				seektimer.addEventListener(TimerEvent.TIMER,updateseekbar);
+				//seektimer.start();
+    			}
+
+
+				}
+			public function mediaclicked(event:ListEvent):void
+				{
+				log.text += "\n" + String(event.rowIndex);	
+				var selmed:String=event.currentTarget.selectedItem.Name;
+				log.text += "\n" + selmed; 	
+				
+				
+				ns1.close();
+			
+				     
+           		video.attachNetStream(ns1);
+				var customClient:Object = new Object();
+         
+                
+				
+				//ns1.bufferTime = 10;
+				ns1.play(event.currentTarget.selectedItem.Name);
+				ns1.addEventListener("netStatus",onSeek);
+				
+				
+				
+				videoHolder.addChild(video);
+				
+				
+		
+				
+				}
+			
+			public function updateseekbar(event:TimerEvent):void {
+				seekslider.value = ns1.time;
+			
+			}
+			
+			public function onImageDataHandler(imageData:Object):void {
+                log.text += "imageData length: " + imageData.data.length;
+               
+            }
+
+			
+			public function playshow():void
+				{
+				ns1.close();
+				if (video != null)
+					{
+					video.clear();
+					videoHolder.removeChild(video);
+					}	
+				bustop.visible = false;
+				burec.visible = true;
+				get_list_of_av_medias();	
+				}
+			
+			
+			public function medseek():void
+				{
+				ns1.seek(seekslider.value);
+				}
+				
+			public function startrecording(e:MouseEvent):void
+				{
+				bustop.visible = true;
+				burec.visible = false;	
+				var temp1:String = medrecname.text.replace("/","");
+				var temp2:String = temp1.replace("..","");
+				if (ns1 != null)
+					{
+						ns1.close();
+						ns1.attachCamera(camera);
+                                                ns1.attachAudio(micro);
+						ns1.publish(temp2,"record");
+					}			
+				}
+			private function glamerror(error:Object):void
+				{}	
+        	
+        	private function bustopclicked(e:Event):void
+        		{       	
+        		bustop.visible = false;
+				burec.visible = true;	
+				if (ns1 != null)
+					{
+						ns1.close();
+		
+					}
+        		}
+        		
+        	public function onNCStatus(event:NetStatusEvent):void 
+				{
+   				if(event.info.code == "NetConnection.Connect.Success") 
+   					{
+					cled.visible = false;
+					bled.visible =  true;
+					log.text += "\ncall for avaiable medias";
+					ns1 = new NetStream(myconn);
+					client = new Object();
+					client.onMetaData = onMetaData;
+					ns1.client = client;
+            		get_list_of_av_medias();
+   					}
+   					else
+   					{
+   					cled.visible = true;
+					bled.visible =  false;	
+   					log.text += "\n" + event.info.code;
+   					}
+	
+				}
+        ]]>
+    </mx:Script>
+    
+	<mx:Style>
+		.titleplay
+			{
+			font-style: bold;
+			}
+	</mx:Style>
+	<mx:Image source="./process-one_logo.png" x="20"/>
+	<mx:Canvas>
+		
+	<mx:VBox id="box" width="400" verticalGap="0" y="70" x="21">	
+	<mx:TabBar  dataProvider="tnav" styleName="tabstyle" 
+	tabHeight="30" borderStyle="none" visible="true" horizontalAlign="right" 
+	id="tbar" tabWidth="160"     themeColor="0x2c1f6b"/>
+			
+		<mx:ViewStack id="tnav"
+				width="100%"
+                height="270"
+                borderSides="left bottom right top "
+                borderStyle="solid"
+                 borderColor="0x2c1f6b"
+                borderThickness="1">
+			<mx:Panel id="play"  show="playshow()" backgroundColor="0xFAFAFA"  title="Available media:" label="Play"  initialize="select_play()">
+			<mx:DataGrid id="medlist" height="225" width="360" minColumnWidth="300"  itemClick="mediaclicked(event)">
+				
+			</mx:DataGrid>
+		
+			</mx:Panel>
+				
+			<mx:Panel id="recordp"    show="select_rec()"    creationComplete="final_init()" label="record">
+			<mx:Label text="Please enter the name of your published clip:"></mx:Label>
+			<mx:TextInput id="medrecname"  />
+			
+			</mx:Panel>
+		
+		</mx:ViewStack>
+	</mx:VBox>
+		
+	
+		<mx:Panel id="pan" y="70" x="450">
+			
+		</mx:Panel>
+	</mx:Canvas>
+	<mx:TextArea id="log" width="730" height="54" x="20" y="453" borderColor="0x2c1f6b">
+		
+	</mx:TextArea>
+	<mx:HSlider x="459" y="378" width="291" change="medseek();" minimum="0" id="seekslider"/>
+	<mx:TextInput x="118" y="404" id="serverurl" text="rtmp://localhost/firstapp"/>
+	<mx:Button x="292" y="404" label="connect" click="buconnect()"/>
+	<mx:Label x="31" y="406" text="RTMP server:" fontWeight="bold"/>
+	<mx:RadioButton x="371" y="406" borderColor="#741225" fillAlphas="[1.0, 1.0]" fillColors="[#FB0000, #FB0000]" id="cled"/>
+	<mx:RadioButton x="371" y="406" fillAlphas="[1.0, 1.0]" fillColors="[#0ED93E, #0ED93E]" visible="false" id="bled"/>
+	<mx:Button x="758" y="368" label="Pause" click="pause();" id="bpause"/>
+	
+</mx:Application>

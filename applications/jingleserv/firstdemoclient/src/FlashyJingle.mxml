@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="600" height="150" horizontalAlign="left" verticalAlign="top" initialize="init_client()" borderStyle="outset" backgroundGradientAlphas="[1.0, 1.0]" backgroundGradientColors="[#000033, #000033]">
+	<mx:states>
+		<mx:State name="init"/>
+		<mx:State name="loaded" enterState="loaded()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Loaded"/>
+		</mx:State>
+		<mx:State name="receive-session-initiation" enterState="receive_session_initiation()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Received Call Resquest."/>
+			<mx:SetProperty target="{uiappstate}" name="width" value="227"/>
+		</mx:State>
+		<mx:State name="init_wait_session_ack"  enterState="init_wait_session_ack()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Waiting for Ack ..."/>
+			<mx:SetProperty target="{uiappstate}" name="width" value="207"/>
+		</mx:State>
+		<mx:State name="send_session_initiate" enterState="send_session_initiation()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Initiating call ..."/>
+		</mx:State>
+		<mx:State name="user_ring">
+			<mx:SetProperty name="height" value="314"/>
+			<mx:SetProperty target="{uidebug}" name="height" value="226"/>
+		</mx:State>
+		<mx:State name="init_wait_resp_accept" enterState="init_wait_resp_accept()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Waiting for other side to accept ..."/>
+			<mx:SetProperty target="{uiappstate}" name="width" value="231"/>
+		</mx:State>
+		<mx:State name="responder_accept_session" enterState="responder_accept_session()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Responder accepted session."/>
+		</mx:State>
+		<mx:State name="responder_wait_final_ack" enterState="responder_wait_final_ack()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Wait for final Ack"/>
+		</mx:State>
+		<mx:State name="initiator_session_established">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Sending request .."/>
+			<mx:SetProperty target="{uiappstate}" name="width" value="288"/>
+		</mx:State>
+		<mx:State name="resp_playing" enterState="resp_playing()">
+			<mx:SetProperty target="{uiappstate}" name="text" value="Playing."/>
+			<mx:SetProperty target="{uiappstate}" name="width" value="114"/>
+		</mx:State>
+	</mx:states>
+	<mx:Script>
+        <![CDATA[
+
+import flash.external.*;
+import flash.external.ExternalInterface;
+import flash.system.Security;
+
+
+private var state_graph:XML ; 
+private var appstate:String;					
+private var netcon:NetConnection;
+public var micro:Microphone;
+public var upstream:NetStream;
+public var downstream:NetStream;
+public var myjid:String = "";
+public var othersidejid:String = "undefined";
+public var session_id:String;
+public 	var SessionSO:SharedObject;
+public var Omsurl:String = "rtmp://zinid.ru/jingleserv"; 
+public var role:String="undefined";
+private var last_stanzas:XML;
+private var currentiq:String = "yd71f495";
+
+
+//state functions:
+public function init_client():void
+	{
+		XML.setSettings();
+		
+		uiappstate.text  = "initialized";
+		
+		//this have to be set correctly
+		Security.allowDomain('*');
+		Security.allowDomain('http://192.168.1.237');
+		Security.allowDomain('localhost');
+		Omsurl = uiurl.text;
+		
+		if (ExternalInterface.available) {
+				try {
+                    uidebug.text += "Adding callback...\n";
+					ExternalInterface.addCallback("initiateCall",initiateCall);
+               		ExternalInterface.addCallback("jingleStanzaRecv",jingleStanzaRecv);
+               		ExternalInterface.addCallback("endCall",endCall);
+                	ExternalInterface.addCallback("setmyjid",setmyjid);
+                	} 
+                	catch (error:SecurityError) 
+                			{
+                    		uidebug.text += "A SecurityError occurred: " + error.message + "\n";
+                			} 
+                	catch (error:Error) 
+                			{
+                    		uidebug.text += "An Error occurred: " + error.message + "\n";
+                			}
+           	 	}
+				else
+				{
+					uidebug.text += "\nError, external interface not availavle";
+				}
+		uidebug.text += "\n" + "Loading state machine";
+		state_graph = <appstate>
+					  		<state name = "init">`
+					  			<event name="initialize">running</event>
+					  		</state>
+					  		<state name = "loaded">
+					  			<event name="session-initiate">receive-session-initiation</event>
+					  			<event name="call">send_session_initiate</event>
+					  		</state>	
+					  		
+					  		<state name="init_wait_session_ack">
+					  			<event name="result">init_wait_resp_accept</event>
+					  		</state>
+					  		
+					  		<state name="init_wait_resp_accept">
+					  			<event name="session-accept">responder_accept_session</event>
+					  		</state>
+					  		<state name="responder_wait_final_ack">
+					  			<event name="result">resp_playing</event>
+					  		</state>
+						</appstate> ;
+		myjid = ExternalInterface.call("getjid");
+		//uidebug.text += "\njid:" + myjid;
+		uidebug.text += "\nQuitting init state";	
+		application.currentState = "loaded";
+		appstate = "loaded";		
+	}
+
+
+
+
+public function loaded():void
+	{
+		uidebug.text += "\nEntering state: loaded";
+	}
+
+public function receive_session_initiation():void
+	{
+		uidebug.text += "\nEntering state: receive_session_initiation";
+
+		// get the session id as sent by initiator
+		// attribute in action script 3 xml is deprecated, but we are using old syntax for compatibility
+		
+		
+		othersidejid = last_stanzas.@from;
+		currentiq = last_stanzas.@id;
+		
+		namespace jingle = "urn:xmpp:jingle:1" ;
+		use namespace jingle;
+		
+		session_id = last_stanzas.jingle.@sid;		
+		
+		var ack_stanzas:XML = new XML();
+		ack_stanzas = 	
+		<iq 
+    	id={currentiq}
+    	to={othersidejid}
+    	type='result'/>	
+    	
+    	ExternalInterface.call("deliverStanza",ack_stanzas.toXMLString(),othersidejid);
+		ExternalInterface.call("newCallRequested",othersidejid);
+		ExternalInterface.call("receive_flash","-> Sending to other side:" + ack_stanzas.toXMLString());
+		
+		appstate = "receive_session_initiation";
+		
+		
+	}
+	
+//Js warn us we wish to call 
+public function send_session_initiation():void
+{
+		
+		//myjid = "admin@prospero.home/OneTeam";
+		uidebug.text += "\nEntering state: send_session_initiation";
+		
+		var ack_stanzas:XML = new XML();
+		ack_stanzas.ignoreWhite  = true;
+		
+		session_id = generateRandomString(16);
+		
+		uidebug.text += "\nSession Id:" + session_id;
+		
+		ack_stanzas = 	
+		<iq  id='yd71f495' to={othersidejid} type='set'>
+			<jingle xmlns='urn:xmpp:jingle:1' action='session-initiate' initiator={myjid} sid={session_id}>
+				 <content creator='initiator' name={myjid}>
+				 <transport>
+				 <candidate 
+				   url={Omsurl}	
+                   protocol='tcp'
+                   type='host'/>
+				 </transport>
+				 </content>
+			
+			</jingle>
+		</iq>	
+    	
+    	ExternalInterface.call("deliverStanza",ack_stanzas.toXMLString(), othersidejid);
+		ExternalInterface.call("receive_flash","-> Sending to other side:" + ack_stanzas.toXMLString());
+		appstate = "init_wait_session_ack";
+		
+		//start ringing
+		application.currentState="init_wait_session_ack";
+}
+
+
+
+public function init_wait_session_ack():void
+		{
+		uidebug.text += "\nWaiting for ack";
+		appstate="init_wait_session_ack"
+		}
+
+public function init_wait_resp_accept():void
+	{
+		uidebug.text += "\nReceived ack switching to init_wait_resp_accept";
+		appstate="init_wait_resp_accept"
+	}
+
+public function responder_accept_session():void
+	{
+		
+	uidebug.text += "\nEntering state: responder_accept_session";	
+	
+	//try to connect oms server
+	netcon = new NetConnection();
+    netcon.objectEncoding = ObjectEncoding.AMF0;
+    netcon.addEventListener("netStatus", onNCStatusinitiator);	
+	netcon.connect(Omsurl);
+		
+    	
+	}
+
+
+public function js_hang_up(Jid:String):void
+	{
+		//othersidejid = Jid;
+		//try to connect oms server
+		netcon = new NetConnection();
+        netcon.objectEncoding = ObjectEncoding.AMF0;
+        netcon.addEventListener("netStatus", onNCStatus);	
+		netcon.connect(Omsurl);
+		
+			
+	}
+
+public function responder_wait_final_ack():void
+	{
+	appstate= "responder_wait_final_ack";	
+		
+	}
+
+
+public function jingleStanzaRecv(Stanzas:String):void
+	{
+	var xmlmes:XML = new XML(Stanzas);
+	xmlmes = xmlmes.normalize();
+	
+	last_stanzas = xmlmes;
+	//uidebug.text += "\n raw stanza" + xmlmes.toString();
+	ExternalInterface.call("receive_flash","\n-> Received from other side:" + Stanzas);
+	var jabtype:String = xmlmes.@type;
+
+	switch (jabtype)
+		{
+			case "result":
+				var action:String = xmlmes.@type;
+				break;
+				
+			case "set":					
+				namespace jingle = "urn:xmpp:jingle:1" ;
+				use namespace jingle;
+			
+				//uidebug.text += "\n raw stanza" + xmlmes.toString();
+				var action:String = xmlmes.jingle.@action;
+				break;
+		}
+	
+	uidebug.text += "\nReceived js event action:" + action + " in state:" + appstate;
+	switch (action)
+		{
+		case "session-terminate":
+			{
+				osTerminateSession();
+				break;
+			}	
+		
+		default:
+			{
+			var next_state:String = state_graph.state.(@name==appstate).event.(@name==action);
+			uidebug.text += "\nnext state:" + next_state.toString();
+			application.currentState = next_state;
+			}
+		}
+	}        
+
+
+public function initiateCall(Jid:String):void
+{
+uidebug.text += "\nreceveid initiateCall";
+
+if (appstate=="receive_session_initiation")
+	{
+	js_hang_up(Jid);	
+	}	
+	else if (appstate=="loaded")
+		{
+		othersidejid = Jid;
+		application.currentState="send_session_initiate";
+		}
+		else
+			uidebug.text += "\nInitiate call received in state:" + appstate;
+}
+
+
+public function call():void
+{
+if (myjid == "")
+	{
+		myjid = ExternalInterface.call("getjid");
+		uidebug.text += "\nRequested jid:" + myjid;
+	}
+	
+ExternalInterface.call("requestCall",myjid);
+uidebug.text += "\nCalling .....";
+application.currentState = "send_session_initiate";
+}	
+	
+public function resp_playing():void
+{
+for (var i=0;i<5000;i++);
+uidebug.text += "\n playing initiator";
+downstream.play("initiator" + session_id);
+} 	
+
+
+public function osTerminateSession():void
+	{
+		uidebug.text += "\nOther side closed call";
+		if (netcon != null) 
+		{
+		upstream.close();
+		downstream.close();
+		netcon.close();
+		}
+		
+		ExternalInterface.call("callEnded",myjid,"end");
+		appstate = "loaded";
+		application.currentState = "loaded";
+		loaded();
+	}
+
+public function endCall(jid:String):void
+	{
+	uidebug.text += "\nEnding call...";
+	if (netcon != null) 
+		{
+		upstream.close();
+		downstream.close();
+		netcon.close();
+		}
+		
+		
+	var termst:XML = new XML();
+	termst = 
+		<iq
+    	id='bv81gs75'
+    	to={othersidejid}
+    	type='set'>
+  			<jingle xmlns='urn:xmpp:jingle:1'
+          	action='session-terminate'
+          	initiator={myjid}
+          	sid={session_id}>
+    		<reason>
+      			<success/>
+    		</reason>
+  			</jingle>
+		</iq>
+	
+	ExternalInterface.call("deliverStanza",termst.toXMLString(),othersidejid);
+	ExternalInterface.call("callEnded",myjid,"end");
+	ExternalInterface.call("receive_flash","-> Sending to other side:" + termst.toXMLString());
+	appstate = "loaded";
+	application.currentState = "loaded";
+	}
+
+
+public function setmyjid(jid:String):void
+	{
+		
+	myjid = jid;	
+	uidebug.text += "\nJS set jid to :" + myjid;	
+	}
+	
+	
+	
+public function generateRandomString(newLength:Number):String{
+  var a:String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  var alphabet:Array = a.split("");
+  var randomLetter:String = "";
+  for (var i:Number = 0; i < newLength; i++){
+    randomLetter += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return randomLetter;
+}
+//******************* Private functions ****************************
+public function onNCStatus(event:NetStatusEvent):void 
+				{
+   				switch (event.info.code)
+   					{
+   				
+   					 case "NetConnection.Connect.Success": 
+   						{
+						
+						uidebug.text += "\nConnected to OMS server";
+						//SessionSO = SharedObject.getRemote("session", Omsurl, false);
+           				//SessionSO.addEventListener(SyncEvent.SYNC,SOSync);
+						//SessionSO.connect(netcon);
+						//SessionSO.setProperty("resp_state","send_ack");
+						
+										
+						upstream = new NetStream(netcon);
+						downstream = new NetStream(netcon);
+						micro = new Microphone();
+						micro = Microphone.getMicrophone();
+						micro.gain = 75;
+						//micro.setSilenceLevel(0);
+						upstream.attachAudio(micro);
+					
+					
+						upstream.publish("responder" + session_id);
+						
+				
+   						
+   						uidebug.text += "\n-----publish started";
+   						var acceptstanzas:XML = new XML();
+    					acceptstanzas = 
+    							<iq
+    							id='yd71f496'
+				    			to={othersidejid}
+				    			type='set'>
+				  		<jingle xmlns='urn:xmpp:jingle:1'
+				        	  action='session-accept'
+				        	  responder={myjid}
+				        	  sid={session_id}>
+				    	<content creator='initiator' name='voice'>
+				    	</content>
+				  		</jingle>
+						</iq>;		
+    
+  
+    
+    				
+					ExternalInterface.call("callStarted",othersidejid);
+					ExternalInterface.call("deliverStanza",acceptstanzas.toXMLString(),othersidejid);
+					ExternalInterface.call("receive_flash","-> Sending to other side:" + acceptstanzas.toXMLString());
+					
+					appstate = "responder_wait_final_ack";
+					application.currentState = "responder_wait_final_ack";	
+   						break;
+   						}
+   					
+   					default:
+   					{
+   					uidebug.text += "\nCan't Connect to OMS server:" +event.info.code;
+   					application.currentState = "loaded";
+   					}
+				  }
+				}
+
+public function onNCStatusinitiator(event:NetStatusEvent):void 
+				{
+   				switch (event.info.code)
+   					{
+   					case "NetConnection.Connect.Success":
+   						{
+						uidebug.text += "\nConnected to OMS server";
+					//SessionSO = SharedObject.getRemote("session", Omsurl, false);
+           			//SessionSO.addEventListener(SyncEvent.SYNC,SOSync);
+					//SessionSO.connect(netcon);
+					//SessionSO.setProperty("initiator_state","init_wait_resp_accept");
+   					
+   						upstream = new NetStream(netcon);
+   						micro = new Microphone();
+   						micro = Microphone.getMicrophone();
+   						//micro.setSilenceLevel(0);
+   					
+   						upstream.attachAudio(micro);
+   						upstream.addEventListener(NetStatusEvent.NET_STATUS,upseventmgr);
+   						upstream.publish("initiator" + session_id);
+   			
+   						uidebug.text +="\n---publish started";
+   						downstream = new NetStream(netcon);
+   						
+   					
+   					
+						var ackxml:XML = new XML();   					
+   						ackxml = 
+   							<iq 
+    						id='yd71f496'
+    						to={othersidejid}
+    						type='result'/>	
+   					
+   						
+   						downstream.play("responder" + session_id);
+   						ExternalInterface.call("deliverStanza", ackxml.toXMLString(),othersidejid);
+   						ExternalInterface.call("callStarted",othersidejid);
+   						ExternalInterface.call("receive_flash","-> Sending to other side:" + ackxml.toXMLString());
+					
+   						appstate = "initiator_session_established";
+   						application.currentState = "initiator_session_established";
+   						break;
+   						}
+   					default:
+   					{
+   					uidebug.text += "\nCan't Connect to OMS server";
+   					application.currentState = "loaded";
+   					}
+					}
+				}
+
+public function upseventmgr(event:NetStatusEvent):void
+	{
+	 switch (event.info.code)
+        {
+            case "NetStream.Publish.Start":
+   						{
+   						uidebug.text +="\n---publish started";
+   						downstream = new NetStream(netcon);
+   						
+   					
+   					
+						var ackxml:XML = new XML();   					
+   						ackxml = 
+   							<iq 
+    						id='yd71f496'
+    						to={othersidejid}
+    						type='result'/>	
+   					
+   						
+   						downstream.play("responder" + session_id);
+   						ExternalInterface.call("deliverStanza", ackxml.toXMLString(),othersidejid);
+   						ExternalInterface.call("callStarted",othersidejid);
+   						ExternalInterface.call("receive_flash",ackxml.toXMLString());
+					
+   						appstate = "initiator_session_established";
+   						application.currentState = "initiator_session_established";
+   						break;
+   						}
+           
+        }	
+	}
+	
+	
+	
+public function SOSync(event:SyncEvent):void
+				{
+				uidebug.text += "\nSync event:" + event.type.toString();
+				var infoObj:Object=event.changeList;
+	
+				for (var i = 0; i<infoObj.length; i++) 
+					{
+				
+					var info = infoObj[i];
+					if (info.name != undefined) 
+						{
+						uidebug.text += "\nChangelist name:" + info.name+"="+info.code;
+						} 
+						else 
+							{
+							uidebug.text += "\nNo nmame :" + info.code;
+							}
+					}
+				}		
+
+
+public function uibutpref():void
+	{
+	if ( canvaspref.visible == false )
+		canvaspref.visible = true;
+		else
+		canvaspref.visible = false;	
+	}				
+				
+public function setserverurl():void
+	{
+	Omsurl = uiurl.text;	
+		
+	}				     
+                   ]]>
+		</mx:Script> 	
+	<mx:TextArea x="10" y="36" width="565" height="52" id="uidebug"/>
+	<mx:Label x="10" y="10" text="Status :" fontWeight="bold" color="#FFFFFF"/>
+	<mx:Label x="67" y="10" text="initialisation" width="296" id="uiappstate" color="#EAFBFF"/>
+	<mx:Button x="10" y="96" label="Prefs." click="uibutpref();"/>
+	<mx:Canvas x="102" y="96" width="473" height="22" borderColor="#FFFFFF" borderStyle="outset" visible="false" backgroundColor="#538600" id="canvaspref">
+		<mx:Label x="0" y="0" text="RTMP URL:" color="#FFFFFF" height="18"/>
+		<mx:TextInput x="70" y="0" width="355" text="rtmp://dev2.process-one.net/jingleserv" change="setserverurl()" id="uiurl" height="28"/>
+	</mx:Canvas>
+	
+
+	
+</mx:Application>

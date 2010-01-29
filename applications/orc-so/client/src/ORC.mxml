@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" currentState="Loginscreen">
+	
+<mx:Script>
+        <![CDATA[
+        	import mx.controls.CheckBox;
+        	import mx.controls.Image;
+        	import mx.controls.TextArea;
+        	import mx.containers.Canvas;
+        	import mx.controls.Label;
+             import flash.net.Responder;
+       import mx.collections.ArrayCollection;
+                  import mx.collections.SortField;
+                  import mx.collections.Sort;
+        
+    		import mx.core.UIComponent; 
+    		import mx.containers.VBox;
+ 			import mx.controls.TextInput;
+ 			import mx.controls.Button;
+ 			import mx.controls.ComboBox;
+ 			import flash.events.Event;
+ 	
+       public var myconn:NetConnection;
+       public var resp:Responder;
+       public var roster:SharedObject;
+       public var chat_buf:SharedObject;
+       
+       [Bindable]
+            public var mystatut:Array = ["Online", "Away", "Busy"]; 
+
+       
+       [Bindable]
+       private var rosterData:ArrayCollection = new ArrayCollection();
+       		
+       		public function onNCStatus(event:NetStatusEvent):void 
+					{
+   					//debugt.text += "\nconnection event"
+   					if(event.info.code == "NetConnection.Connect.Success") 
+   						{
+						currentState = "Logged";
+						
+						roster = SharedObject.getRemote("roster", myconn.uri, false);
+           				roster.addEventListener(SyncEvent.SYNC,RosterSync);
+						roster.connect(myconn);	
+           				roster.setProperty(nick.text,Status.text);	
+           				
+           				
+           				
+           				
+           				chat_buf = SharedObject.getRemote("chat_buf", myconn.uri, false);
+           				chat_buf.addEventListener(SyncEvent.SYNC,chatbufsync);
+						chat_buf.connect(myconn);	
+           					
+   						}
+   						else
+   						{
+   						//Erreur login
+   						}
+					}
+			
+			public function RosterSync(event:SyncEvent):void
+					{
+				
+					var tab:Array = new Array();
+					for (var i:int = 0 ;i< event.changeList.length;i++)
+						{
+						var name:String = roster.data[event.changeList[i].name];
+						tab[i] = event.changeList[i].name.toString() + " : " + name;
+						}
+					memlist.dataProvider = tab;
+					//debugt.text += "\n" ;
+					}
+
+			public function chatbufsync(event:SyncEvent):void
+					{
+					debugt.text += "\n" + "SO chat buf sync event: " + event.toString() + "\n" ;
+					if (chat_buf.data.Newline != null)
+						chatsc.text += "\n" +  chat_buf.data.Newline;
+					}		
+
+
+				public function updatelist():void
+					{
+						
+					}
+		
+				public function buconnectclicked():void
+					{
+            
+        	   		myconn = new NetConnection();
+        	   		myconn.objectEncoding = ObjectEncoding.AMF0;
+            		myconn.addEventListener("netStatus", onNCStatus);	
+            		var client:Object = myconn.client;
+					//var simpleRemoteCalls:SimpleRemoteCalls = this;
+
+					myconn.client = this;
+					myconn.connect(urlserver.text,nick.text);	
+					}
+        
+         private function glamresult(result:String):void
+				{
+				
+				}
+				
+			private function glamerror(error:Object):void
+				{
+			
+				
+				}	
+        		
+        		
+        		public function statuschange():void
+        			{
+        				roster.setProperty(nick.text,Status.text);
+        			}
+        		
+        		public function post():void
+        			{
+        			chat_buf.setProperty("Newline",nick.text + " > " + saisie.text);
+        			//chat_buf.setProperty("poster",nick.text);
+            		saisie.text = "";
+        			}
+        
+        		public function newline(s:String):void
+        			{
+        
+        			chatsc.text += s + "\n"; 	
+        				
+        			}
+        			
+        	
+          ]]>
+</mx:Script> 	
+	
+	
+	
+	
+	
+	
+	<mx:states>
+		<mx:State name="Loginscreen">
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Label x="10" y="114" text="RTMP server"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Label x="10" y="192" text="Nick"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextInput x="10" y="140" id="urlserver" text="rtmp://localhost/orc-so"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextInput x="10" y="218" id="nick"/>
+			</mx:AddChild>
+			<mx:SetProperty target="{panel1}" name="width" value="426"/>
+			<mx:SetProperty target="{panel1}" name="height" value="331"/>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Button x="228" y="140" label="Connect" width="146" height="100" id="buconnect"  click="buconnectclicked()"/>
+			</mx:AddChild>
+		
+			<mx:SetProperty target="{image1}" name="source" value="process-one_logo.png"/>
+		</mx:State>
+		<mx:State name="Logged">
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:List x="10" y="111" width="159" height="174" id="memlist"  dataProvider="{rosterData}"></mx:List>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextArea x="203" y="113" width="327" height="209" id="chatsc"/>
+			</mx:AddChild>
+			<mx:SetProperty target="{image1}" name="width" value="329"/>
+			<mx:SetProperty target="{image1}" name="height" value="69"/>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:TextInput x="10" y="330" width="490" editable="true" id="saisie"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:Button x="508" y="330" label="Button" width="22" id="busaisie" click="post()"/>
+			</mx:AddChild>
+			<mx:SetProperty target="{image1}" name="source" value="./process-one_logo.png"/>
+			<mx:RemoveChild target="{debugt}"/>
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:ComboBox x="10" y="300" id="Status" editable="false" enabled="true"  dataProvider="{mystatut}" change="statuschange()"></mx:ComboBox>
+			</mx:AddChild>
+			<mx:AddChild position="lastChild">
+				<mx:TextArea x="10" y="441" width="576" height="67" id="debugt"/>
+			</mx:AddChild>
+			
+		</mx:State>
+	</mx:states>
+	<mx:Panel x="10" y="10" width="576" height="423" layout="absolute" id="panel1">
+		<mx:Image x="10" y="10" width="229" height="60" id="image1"/>
+	</mx:Panel>
+	
+	
+</mx:Application>

@@ -1,0 +1,198 @@
+.x-roster-group .x-tree-node-icon {
+  display: none;
+}
+
+.x-roster-group .x-tree-ec-icon {
+  position: absolute;
+  right: 2px;
+}
+
+.x-roster-group, .x-roster-group:hover {
+  font-weight: bold;
+  background: #00244e;
+  color: white;
+}
+
+.x-roster-group:hover, .x-roster-group.x-tree-node-over {
+  background: #00143e;
+}
+
+.x-roster-group.x-tree-selected {
+  background: #00446e;
+}
+
+.x-roster-group a span {
+  color: white;
+}
+
+.x-roster-item .x-tree-node-indent, .x-roster-item .x-tree-ec-icon {
+  display: none;
+}
+
+.infoPanel span {
+  margin: 3px;
+  padding-left: 20px;
+  background-repeat: no-repeat;
+  background-position: center left;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.x-presence-available .infoPanel span,
+.x-presence-available .x-tree-node-icon {
+  background-image: url(../images/status-icons/online.png)
+}
+
+.x-presence-chat .infoPanel img,
+.x-presence-chat .x-tree-node-icon {
+  background-image: url(../images/status-icons/chat.png)
+}
+
+.x-presence-dnd .infoPanel img,
+.x-presence-dnd .x-tree-node-icon {
+  background-image: url(../images/status-icons/dnd.png)
+}
+
+.x-presence-away .infoPanel img,
+.x-presence-away .x-tree-node-icon {
+  background-image: url(../images/status-icons/away.png)
+}
+
+.x-presence-xa .infoPanel img,
+.x-presence-xa .x-tree-node-icon {
+  background-image: url(../images/status-icons/xa.png)
+}
+
+.x-presence-unavailable .infoPanel img,
+.x-presence-unavailable .x-tree-node-icon {
+  background-image: url(../images/status-icons/offline.png)
+}
+
+.x-presence-unavailable a span {
+  color: #888;
+}
+
+.x-message-nick,
+.x-role-participant a span,
+.x-role-participant .infoPanel span {
+  color: #DE0D0D !important;
+}
+
+.x-message-nick.me,
+.x-role-moderator a span,
+.x-role-moderator .infoPanel span {
+  color: #0B43E8 !important;
+}
+
+.x-call-available .x-tree-call-action {
+  position: absolute;
+  right: 20px;
+  width: 16px;
+  height: 18px;
+  border: 0 none;
+  margin: 0;
+  padding: 0;
+  background-image: url(../images/call-action.png);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.x-tree-extra-actions {
+  position: absolute;
+  right: 2px;
+  width: 16px;
+  height: 18px;
+  border: 0 none;
+  margin: 0;
+  padding: 0;
+  background-image: url(../images/extra-actions.png);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.x-hide-extra-actions .x-tree-extra-actions {
+  display: none
+}
+
+.errorMessage {
+  margin-top: 1em;
+  color: red;
+  text-align: center;
+}
+
+.x-message-nick {
+  font-weight: bold;
+}
+
+.x-message-nick .x-muted,
+.x-roster-item.x-muted
+{
+  text-decoration: line-through;
+}
+
+.x-message-body.x-muted {
+  background: #ddd;
+}
+
+.x-message-system {
+  color: #0c9913;
+}
+
+.x-message-date {
+  color: #707070;
+}
+
+.word.blocked {
+  background: red;
+}
+
+.x-message-blocked-words .x-message-body {
+  text-decoration: line-through;
+}
+
+.x-tree-node-icon {
+  vertical-align: middle !important;
+}
+
+.hidden-field {
+  display: none;
+}
+
+.x-action-re:hover, .word:hover, .x-action-nick:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#msg-div {
+  position:absolute;
+  left:35%;
+  top:10px;
+  width:330px;
+  z-index:20000;
+}
+
+#msg-div .msg {
+  margin: 2px auto;
+  padding: 10px 15px 10px 30px;
+
+  min-width: 100px;
+  min-height: 10px;
+
+  background: url(../images/information.png) 0px 0.8em no-repeat #D7E2F3;
+  border: 1px solid #80baff;
+
+  color: #555;
+}
+
+#welcome-msg {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 60%;
+  margin: 0 20%;
+  padding: 1em;
+  background: white;
+  border: 1px solid #80baff;
+  text-align: center;
+  z-index: 30000;
+}

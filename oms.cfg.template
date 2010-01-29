@@ -1,0 +1,10 @@
+[main]
+loglevel = 4
+app_conf_dir = @app_conf_dir@
+app_beam_dir = @app_beam_dir@
+
+[listen]
+# currently only plain RTMP is supported
+type = rtmp
+address = 0.0.0.0
+port = 1935
