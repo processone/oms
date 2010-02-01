@@ -1,0 +1,35 @@
+Stress tool brief description
+
+1) Compile OMS:
+
+$ ./configure
+$ make all
+
+2) Edit stress.cfg. Refer to comments in this file. For example:
+
+[main]
+loglevel = 4
+logfile = stress.log
+server = localhost
+port = 1935
+type = rtmp
+connection_speed = 200
+connection_lifetime = 600
+connection_number = 10
+app_name = jingleserv
+behaviour = publisher-subscriber
+publish_rate = 65/32
+
+This will start a connection to rtmp://localhost:1935/jingleserv every
+200 milliseconds until 10 connections will be established.
+Every connection will be active within 600 seconds.
+The behaviour is 'publisher-subscriber' which means there will be started
+5 pairs of connections (10/2 = 5) which will exchange traffic between each
+other at rate 65 bytes per 32 milliseconds. The log level is 4 (Info)
+and log file is stress.log.
+
+3) run stress tool:
+
+$ ./omsctl stress
+
+4) to stop it just type Ctrl+C.
