@@ -32,4 +32,6 @@ and log file is stress.log.
 
 $ ./omsctl stress
 
+Make sure that an RMTP server is already running before. See README.
+
 4) to stop it just type Ctrl+C.
