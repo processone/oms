@@ -50,6 +50,15 @@ debug()
 	$ARGS "$@"
 }
 
+stress()
+{
+    $ERL \
+	+K $POLL +B \
+	-pa $BEAMDIR \
+	-s oms_stress start \
+	$ARGS "$@"
+}
+
 usage()
 {
     echo "usage: omsctl start | stop | live | debug"
@@ -63,5 +72,6 @@ case $1 in
     stop) stop;;
     live) live;;
     debug) debug;;
+    stress) stress;;
     *) usage;;
 esac

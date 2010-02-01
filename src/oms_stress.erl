@@ -29,62 +29,72 @@
 -include("p1_logger.hrl").
 
 -record(state, {name,
+		server,
+		port,
+		app_name,
 		type,
 		audio_data,
 		rtmp_sock,
 		publish_stream,
 		owner,
 		stop_reason,
+		buffer_time,
 		publish_name,
+		publish_rate,
 		play_name}).
 
--define(SERVER, "localhost").
--define(PORT, 1935).
-%%-define(APP, "oflaDemo").
--define(APP, "jingleserv").
--define(BUF_LEN_MS, 64000).
--define(CONNECTION_NUMBER, 500).
--define(CONNECTION_LIFETIME, 10). %% in minutes
--define(CONNECTION_SPEED, 200). %% in msec
 -define(CONNECTION_TIMEOUT, 10000).
--define(PUBLISH_STREAM_RATE, {32, 65}). %% msec/bytes
-%%-define(PUBLISH_STREAM_RATE, {50, 300}).
--define(LOGLEVEL, 4).
--define(LOGFILE, "stress.log").
--define(PLAY_FILE, "avatar-vp6.flv").
 
 %%====================================================================
 %% API
 %%====================================================================
 start() ->
-    p1_loglevel:set(?LOGLEVEL),
-    error_logger:add_report_handler(p1_logger_h, ?LOGFILE),
-    crypto:start(),
-    erl_ddll:load_driver(".", rtmp_codec_drv),
-    %%start(idle).
-    start(publisher_subscriber).
-    %%start(player).
+    spawn(fun start1/0).
 
-start(publisher_subscriber) ->
-    PairNum = ?CONNECTION_NUMBER div 2,
+start1() ->
+    case oms_config:parse("stress.cfg") of
+	{ok, Config} ->
+	    Opts = process_config(Config),
+	    p1_loglevel:set(proplists:get_value(loglevel, Opts)),
+	    error_logger:add_report_handler(
+	      p1_logger_h, proplists:get_value(logfile, Opts)),
+	    crypto:start(),
+	    erl_ddll:load_driver(".", rtmp_codec_drv),
+	    start(proplists:get_value(behaviour, Opts), Opts),
+	    loop();
+	Err ->
+	    Err
+    end.
+
+loop() ->
+    receive
+	_ ->
+	    loop()
+    end.
+
+start('publisher-subscriber', Opts) ->
+    PairNum = proplists:get_value(connection_number, Opts) div 2,
+    Speed = proplists:get_value(connection_speed, Opts),
     lists:foldl(
       fun(N, Acc) ->
-	      timer:sleep(?CONNECTION_SPEED),
-	      P1 = start_session(2*N-1, publisher),
-	      P2 = start_session(2*N, publisher),
+	      timer:sleep(Speed),
+	      P1 = start_session(2*N-1, publisher, Opts),
+	      P2 = start_session(2*N, publisher, Opts),
 	      ?GEN_FSM:send_event(P1, {subscribe, 2*N}),
 	      ?GEN_FSM:send_event(P2, {subscribe, 2*N-1}),
 	      [P1, P2 | Acc]
       end, [], lists:seq(1, PairNum));
-start(Type) when Type == player; Type == idle ->
+start(Type, Opts) when Type == player; Type == idle ->
+    Number = proplists:get_value(connection_number, Opts),
+    Speed = proplists:get_value(connection_speed, Opts),
     lists:foreach(
       fun(N) ->
-	      timer:sleep(?CONNECTION_SPEED),
-	      start_session(N, Type)
-      end, lists:seq(1, ?CONNECTION_NUMBER)).
+	      timer:sleep(Speed),
+	      start_session(N, Type, Opts)
+      end, lists:seq(1, Number)).
 
-start_session(N, Type) ->
-    case ?GEN_FSM:start(?MODULE, [N, Type, self()], []) of
+start_session(N, Type, Opts) ->
+    case ?GEN_FSM:start(?MODULE, [N, Type, self(), Opts], []) of
 	{ok, Pid} ->
 	    receive
 		{ok, Pid} ->
@@ -105,28 +115,44 @@ start_session(N, Type) ->
 %%====================================================================
 %% gen_fsm callbacks
 %%====================================================================
-init([N, Type, Owner]) ->
+init([N, Type, Owner, Opts]) ->
     ?GEN_FSM:send_event(self(), connect),
-    erlang:send_after(timer:minutes(?CONNECTION_LIFETIME), self(), stop),
-    State = #state{name = N, type = Type, owner = Owner},
+    LifeTime = proplists:get_value(connection_lifetime, Opts),
+    Rate = proplists:get_value(publish_rate, Opts),
+    PlayFile = proplists:get_value(play_file, Opts),
+    AppName = proplists:get_value(app_name, Opts),
+    BufferTime = proplists:get_value(buffer_time, Opts),
+    erlang:send_after(timer:seconds(LifeTime), self(), stop),
+    State = #state{server = proplists:get_value(server, Opts),
+		   port = proplists:get_value(port, Opts),
+		   app_name = AppName,
+		   publish_rate = Rate,
+		   buffer_time = BufferTime,
+		   name = N,
+		   type = Type,
+		   owner = Owner},
     NewState = if Type == publisher ->
-		       {_, Size} = ?PUBLISH_STREAM_RATE,
+		       {Size, _} = Rate,
 		       Data = list_to_binary(lists:duplicate(Size, 0)),
 		       State#state{audio_data = Data,
 				   publish_name = integer_to_list(N)};
 		  Type == subscriber ->
 		       State#state{play_name = integer_to_list(N)};
 		  Type == player ->
-		       State#state{play_name = ?PLAY_FILE};
+		       State#state{play_name = PlayFile};
 		  Type == idle ->
 		       State
 	       end,
     {ok, connecting, NewState}.
 
 connecting(connect, State) ->
-    case rtmp_socket:connect(?SERVER, ?PORT) of
+    Server = State#state.server,
+    Port = State#state.port,
+    AppName = State#state.app_name,
+    case rtmp_socket:connect(Server, Port) of
 	{ok, RTMPSock} ->
-	    rtmp_socket:send(RTMPSock, connect_msg()),
+	    erlang:monitor(process, RTMPSock),
+	    rtmp_socket:send(RTMPSock, connect_msg(Server, Port, AppName)),
 	    {next_state, wait_for_connect_reply,
 	     State#state{rtmp_sock = RTMPSock}};
 	Err ->
@@ -166,9 +192,10 @@ wait_for_create_stream_reply(
 		rtmp_socket:send(RTMPSock, buflen_msg(StreamID, 0)),
 		State;
 	    player ->
+		BufLen = State#state.buffer_time,
 		StreamName = State#state.play_name,
 		rtmp_socket:send(RTMPSock, play_msg(StreamID, StreamName)),
-		rtmp_socket:send(RTMPSock, buflen_msg(StreamID, ?BUF_LEN_MS)),
+		rtmp_socket:send(RTMPSock, buflen_msg(StreamID, BufLen)),
 		State
 	end,
     {next_state, wait_for_onstatus_reply, NewState};
@@ -184,7 +211,7 @@ wait_for_onstatus_reply(
     case lists:keysearch(<<"level">>, 1, Obj) of
 	{value, {_, <<"status">>}} ->
 	    if Type == publisher ->
-		    {Timeout, _} = ?PUBLISH_STREAM_RATE,
+		    {_, Timeout} = State#state.publish_rate,
 		    erlang:send_after(Timeout, self(), send_audio);
 	       true ->
 		    ok
@@ -217,7 +244,7 @@ handle_sync_event(_Event, _From, StateName, State) ->
 handle_info(stop, _StateName, State) ->
     {stop, normal, State#state{stop_reason = normal}};
 handle_info(send_audio, StateName, State) ->
-    {Timeout, _} = ?PUBLISH_STREAM_RATE,
+    {_, Timeout} = State#state.publish_rate,
     erlang:send_after(Timeout, self(), send_audio),
     rtmp_socket:send(State#state.rtmp_sock,
 		     #rtmp_msg{type = ?AUDIO,
@@ -242,7 +269,8 @@ handle_info({rtmp, _, Msg}, StateName, State) ->
     {next_state, StateName, State};
 handle_info({rtmp_closed, _}, _StateName, State) ->
     {stop, normal, State};
-handle_info(_Info, StateName, State) ->
+handle_info(Info, StateName, State) ->
+    ?INFO_MSG("unexpected info in '~p':~n\t~p", [StateName, Info]),
     {next_state, StateName, State}.
 
 terminate(_Reason, _StateName,
@@ -260,17 +288,18 @@ code_change(_OldVsn, StateName, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-connect_msg() ->
-    URI = "rtmp://" ++ ?SERVER ++ "/" ++ ?APP,
-    AMF = [{object,[{<<"app">>,<<?APP>>},
-		    {<<"flashVer">>,<<"LNX 10,0,22,87">>},
-		    {<<"swfUrl">>,undefined},
+connect_msg(Server, Port, App) ->
+    URI = "rtmp://" ++ Server ++ ":" ++
+	integer_to_list(Port) ++ "/" ++ App,
+    AMF = [{object,[{<<"app">>, App},
+		    {<<"flashVer">>, <<"LNX 10,0,22,87">>},
+		    {<<"swfUrl">>, undefined},
 		    {<<"tcUrl">>, URI},
-		    {<<"fpad">>,false},
-		    {<<"capabilities">>,15.0},
-		    {<<"audioCodecs">>,3191.0},
-		    {<<"videoCodecs">>,252.0},
-		    {<<"videoFunction">>,1.0},
+		    {<<"fpad">>, false},
+		    {<<"capabilities">>, 15.0},
+		    {<<"audioCodecs">>, 3191.0},
+		    {<<"videoCodecs">>, 252.0},
+		    {<<"videoFunction">>, 1.0},
 		    {<<"pageUrl">>,undefined}]}],
     #rtmp_msg{type = ?AMF0_CMD,
 	      stream = 0,
@@ -313,3 +342,45 @@ buflen_msg(StreamID, BufLen) ->
 	      chunk_stream = 2,
 	      timestamp = 0,
 	      data = {?SET_BUFFER_LENGTH, trunc(StreamID), BufLen}}.
+
+process_config(Config) ->
+    [Main|_] = oms_config:get_opts(main, Config),
+    LogLevel = list_to_integer(oms_config:get_opt(loglevel, Main, "4")),
+    LogFile = oms_config:get_opt(logfile, Main, "stress.log"),
+    Server = oms_config:get_opt(server, Main, "localhost"),
+    Port = list_to_integer(oms_config:get_opt(port, Main, "1935")),
+    ConnSpeed = list_to_integer(
+		  oms_config:get_opt(connection_speed, Main, "500")),
+    ConnNumber = list_to_integer(
+		   oms_config:get_opt(connection_number, Main, "10")),
+    ConnLife = list_to_integer(
+		   oms_config:get_opt(connection_lifetime, Main, "600")),
+    AppName = oms_config:get_opt(app_name, Main),
+    Behaviour = list_to_atom(oms_config:get_opt(behaviour, Main)),
+    R = oms_config:get_opt(publish_rate, Main, "65/32"),
+    Rate = case string:tokens(R, "/") of
+	       [BytesStr, MSecsStr] ->
+		   case catch {list_to_integer(BytesStr),
+			       list_to_integer(MSecsStr)} of
+		       {Bytes, MSecs} when Bytes>0, MSecs>0 ->
+			   {Bytes, MSecs};
+		       _ ->
+			   {65, 32}
+		   end;
+	       _ ->
+		   {65, 32}
+	   end,
+    BufTime = list_to_integer(oms_config:get_opt(buffer_time, Main, "65535")),
+    PlayFile = oms_config:get_opt(play_file, Main),
+    [{loglevel, LogLevel},
+     {logfile, LogFile},
+     {server, Server},
+     {port, Port},
+     {connection_speed, ConnSpeed},
+     {connection_number, ConnNumber},
+     {connection_lifetime, ConnLife},
+     {publish_rate, Rate},
+     {buffer_time, BufTime},
+     {play_file, PlayFile},
+     {app_name, AppName},
+     {behaviour, Behaviour}].

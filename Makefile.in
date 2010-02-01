@@ -60,7 +60,8 @@ distclean: clean
 	rm -rf *.log
 	rm -f Makefile
 	rm -f ebin/oms.app
-	rm -rf *.cfg
+	rm -rf oms.cfg
+	rm -rf omsctl.cfg
 	rm -f omsctl
 	rm -rf db
 	rm -f include/oms.hrl
