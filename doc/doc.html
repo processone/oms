@@ -159,11 +159,14 @@ execute:
 </P><PRE CLASS="verbatim">$ ./configure
 $ make all
 </PRE><P>This will create sample configuration files <TT>oms.cfg</TT> and <TT>omsctl.cfg</TT>
-as well as sample administration script <TT>omsctl</TT> in the current directory.
+as well as sample administration script <TT>omsctl</TT> in the current directory and
+download all needed media files (*.flv) from ProcessOne&#X2019;s Web server.
 To start <TT>OMS</TT> execute:
 </P><PRE CLASS="verbatim">$ ./omsctl live
 </PRE><P>This will start <TT>OMS</TT> in &#X201C;live&#X201D; mode (i.e. without detaching it from console),
-and loads all example applications. To stop <TT>OMS</TT> just type Ctrl+C.</P><P>To install <TT>OMS</TT> in your system, you need to execute:
+and load all example applications. To start playing with example applications
+just open <TT>applications/index.html</TT> in your browser.
+To stop <TT>OMS</TT> type Ctrl+C.</P><P>To install <TT>OMS</TT> in your system, you need to execute:
 </P><PRE CLASS="verbatim">$ ./configure --prefix=/ --exec_prefix=/usr
 $ make
 $ sudo make install
@@ -190,6 +193,13 @@ $ sudo make install
 <TT>oms.log</TT>:  <TT>OMS</TT> log
 </LI><LI CLASS="li-itemize"><TT>erlang.log</TT>:  <TT>Erlang/OTP</TT> system log
 </LI></UL>
+</LI></UL><P>If you also want to install all example applications, run:
+</P><PRE CLASS="verbatim">$ sudo make install-all
+</PRE><P>In this case additional files and directories will be created:
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<TT>/etc/oms/apps/*.cfg</TT>:  configuration files of example applications
+</LI><LI CLASS="li-itemize"><TT>/usr/lib/oms/examples</TT>:  a directory with example applications (*.swf, *.html, etc)
+</LI><LI CLASS="li-itemize"><TT>/var/lib/oms/media</TT>:  a directory with media files (*.flv)
 </LI></UL><P>Before starting <TT>OMS</TT> you need:
 </P><UL CLASS="itemize"><LI CLASS="li-itemize">
 create a user account (likely <TT>oms</TT>);
