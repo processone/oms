@@ -11,9 +11,11 @@ BEAMDIR = $(OMSDIR)/ebin
 BEAMDIRLINK = $(OMSDIRLINK)/ebin
 BEAMAPPDIR = $(BEAMDIR)/apps
 BEAMAPPDIRLINK = $(BEAMDIRLINK)/apps
+OMSEXAMPLEDIR = $(OMSDIR)/examples
 INCLUDEDIR = $(OMSDIR)/include
 PRIVDIR = $(OMSDIR)/priv
 SODIR = $(PRIVDIR)/lib
+MEDIADIR = $(DBDIR)/media
 ERL_INTERFACE_DIR = @ERLANG_LIB_DIR_erl_interface@
 CC = @CC@
 CFLAGS = @CFLAGS@
@@ -45,7 +47,10 @@ rtmp_codec_drv.so: c_src/rtmp_codec_drv.c
 	-o rtmp_codec_drv.so \
 	$(DYNAMIC_LIB_CFLAGS)
 
-all: src examples
+all: src examples media
+
+media:
+	. get-media.sh
 
 clean: 
 	rm -rf ebin/*.beam
@@ -111,6 +116,24 @@ install:
 	install -m 755 *.so $(SODIR)
 	install -d -m 640 $(LOGDIR)
 	install -d $(DBDIR)
+
+install-all: media install
+	install -m 644 ebin/apps/*.beam $(BEAMAPPDIR)
+	install -d $(MEDIADIR)
+	for i in `ls applications/app_configs`; do \
+	sed -e "s*applications/medias*$(MEDIADIR)*" \
+		applications/app_configs/$$i > $$i.tmp; \
+		install -b -m 644 $$i.tmp $(ETCAPPDIR)/$$i; \
+		rm $$i.tmp; done
+	install -d $(OMSEXAMPLEDIR)
+	install -m 644 applications/medias/* $(MEDIADIR)
+	cp -r applications/firstapp $(OMSEXAMPLEDIR)
+	cp -r applications/flowplayer $(OMSEXAMPLEDIR)
+	cp -r applications/omschat $(OMSEXAMPLEDIR)
+	cp -r applications/orc $(OMSEXAMPLEDIR)
+	cp -r applications/orc-so $(OMSEXAMPLEDIR)
+	cp -r applications/SOTestExemple $(OMSEXAMPLEDIR)
+	install -m 644 applications/index.html $(OMSEXAMPLEDIR)
 
 uninstall:
 	rm -rf $(ETCDIR)

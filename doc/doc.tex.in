@@ -82,14 +82,17 @@ $ make all
 \end{verbatim}
 
 This will create sample configuration files \texttt{oms.cfg} and \texttt{omsctl.cfg}
-as well as sample administration script \texttt{omsctl} in the current directory.
+as well as sample administration script \texttt{omsctl} in the current directory and
+download all needed media files (*.flv) from ProcessOne's Web server.
 To start \oms{} execute:
 \begin{verbatim}
 $ ./omsctl live
 \end{verbatim}
 
 This will start \oms{} in ``live'' mode (i.e. without detaching it from console),
-and loads all example applications. To stop \oms{} just type Ctrl+C.
+and load all example applications. To start playing with example applications
+just open \texttt{applications/index.html} in your browser.
+To stop \oms{} type Ctrl+C.
 
 To install \oms{} in your system, you need to execute:
 \begin{verbatim}
@@ -123,6 +126,18 @@ This will create and install the following files and directories:
     \titem{oms.log} \oms{} log
     \titem{erlang.log} \erlang{} system log
   \end{itemize}
+\end{itemize}
+
+If you also want to install all example applications, run:
+\begin{verbatim}
+$ sudo make install-all
+\end{verbatim}
+
+In this case additional files and directories will be created:
+\begin{itemize}
+  \titem{/etc/oms/apps/*.cfg} configuration files of example applications
+  \titem{/usr/lib/oms/examples} a directory with example applications (*.swf, *.html, etc)
+  \titem{/var/lib/oms/media} a directory with media files (*.flv)
 \end{itemize}
 
 Before starting \oms{} you need:
