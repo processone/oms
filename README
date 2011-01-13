@@ -11,6 +11,7 @@ To compile OMS you need:
  - GCC
  - Erlang/OTP R11B-0 or higher.
 
+
 1. Compile and install
 
 To compile OMS, execute the commands:
